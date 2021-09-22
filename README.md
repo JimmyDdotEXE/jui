@@ -11,7 +11,7 @@ Sorry about that. Hopefully guaranteed stability will be feasible in the future.
 
 ## Wiki
 
-Documentation for installation, usage, and the source code can all be found in the project's [wiki](https://github.com/JimmyDdotEXE/jui/wiki/Intro).
+Documentation for installation, usage, and the source code can all be found in the project's [wiki](https://github.com/JimmyDdotEXE/jui/wiki).
 
 ## To-Do List
 
