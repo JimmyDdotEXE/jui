@@ -76,14 +76,6 @@ int ScrollBar::getTotalHeight(){
 	return getHeight();
 }
 
-/*
-	is the control active?
-	the function always returns false
-*/
-bool ScrollBar::getActive(){
-	return false;
-}
-
 /*get the size of the content being scrolled*/
 int ScrollBar::getTotalSize(){
 	return totalSize;
@@ -165,22 +157,6 @@ bool ScrollBar::setHeight(uint h){
 	}else{
 		return false;
 	}
-}
-
-/*set if the control is active*/
-bool ScrollBar::setActive(bool b){
-	active = b;
-
-	if(b){
-		textureLock = false;
-	}else{
-		textureLock = true;
-		redraw = true;
-	}
-
-	update();
-
-	return active == b;
 }
 
 /*tell the ScrollBar how big the content it's scrolling is*/
@@ -274,7 +250,7 @@ bool ScrollBar::scrollUp(){
 	}
 
 	redraw = true;
-
+	return true;
 }
 
 /*scroll the content down/right*/
@@ -305,12 +281,16 @@ bool ScrollBar::scrollDown(){
 	}
 
 	redraw = true;
-
+	return true;
 }
 
 
 /*try to handle the given event*/
 bool ScrollBar::handleEvent(Event *event){
+	if(event->getControl() != NULL){
+		setActive(false);
+		return true;
+	}
 
 	//Handle scroll wheel event
 	if(event->getType() == e_SCROLL){
@@ -319,12 +299,14 @@ bool ScrollBar::handleEvent(Event *event){
 
 			if(event->getScrollDirection() == w_UP){
 				scrollUp();
-
+				update();
 				event->setControl(this);
+				return true;
 			}else if(event->getScrollDirection() == w_DOWN){
 				scrollDown();
-
+				update();
 				event->setControl(this);
+				return true;
 			}
 		}
 
@@ -345,7 +327,9 @@ bool ScrollBar::handleEvent(Event *event){
 					grab = event->getX() - offsetX - xPos;
 				}
 
+				update();
 				event->setControl(this);
+				return true;
 
 			}else if(base->boundsCheck(event->getX(), event->getY())){
 
@@ -354,7 +338,7 @@ bool ScrollBar::handleEvent(Event *event){
 				if(orientation == VERTICAL){
 					grab = event->getY() - offsetY - yPos;
 
-					sliderTop->setY(grab - sliderSize/2);
+					sliderTop->setY(grab - (int)sliderSize/2);
 
 					if(sliderTop->getY() < padding){
 						sliderTop->setY(padding);
@@ -367,7 +351,7 @@ bool ScrollBar::handleEvent(Event *event){
 				}else{
 					grab = event->getX() - offsetX - xPos;
 
-					sliderTop->setX(grab - sliderSize/2);
+					sliderTop->setX(grab - (int)sliderSize/2);
 
 					if(sliderTop->getX() < padding){
 						sliderTop->setX(padding);
@@ -379,25 +363,27 @@ bool ScrollBar::handleEvent(Event *event){
 					sliderBottom->setX(sliderMid->getX() + sliderMid->getWidth());
 				}
 
+				update();
 				event->setControl(this);
-
+				return true;
 			}
 
 		}
 
 	//Handle mouse release event
 	}else if((event->getType() == e_MOUSEPRESS && event->getMouseState() == s_UP ||
-						event->getType() == e_CLICK) && active){
+						event->getType() == e_CLICK) && getActive()){
 
 		if(event->getButton() == b_LEFT){
 
 			setActive(false);
+			update();
 			event->setControl(this);
-
+			return true;
 		}
 
 	//Handle mouse move event
-	}else if(event->getType() == e_DRAG && active){
+	}else if(event->getType() == e_DRAG && getActive()){
 
 		if(orientation == VERTICAL){
 			int adjustedY = event->getY() - offsetY - yPos;
@@ -433,10 +419,12 @@ bool ScrollBar::handleEvent(Event *event){
 			sliderBottom->setX(sliderMid->getX() + sliderMid->getWidth());
 		}
 
+		update();
 		event->setControl(this);
-
+		return true;
 	}
 
+	return false;
 }
 
 /*update the theme of the control*/
@@ -444,7 +432,7 @@ bool ScrollBar::updateTheme(){
 	if(darkMode){
 		base->setFillColor(*darkTheme[4]);
 
-		if(active){
+		if(getActive()){
 			sliderTop->setFillColor(*accent);
 			sliderMid->setFillColor(*accent);
 			sliderBottom->setFillColor(*accent);
@@ -457,7 +445,7 @@ bool ScrollBar::updateTheme(){
 	}else{
 		base->setFillColor(*lightTheme[4]);
 
-		if(active){
+		if(getActive()){
 			sliderTop->setFillColor(*accent);
 			sliderMid->setFillColor(*accent);
 			sliderBottom->setFillColor(*accent);
@@ -470,6 +458,7 @@ bool ScrollBar::updateTheme(){
 	}
 	
 	redraw = true;
+	return true;
 }
 
 /*free all the memory used*/
@@ -503,8 +492,7 @@ bool ScrollBar::boundsCheck(int x, int y){
 	the control decides when to update itself
 */
 void ScrollBar::update(){
-
-	if(active){
+	if(getActive()){
 		sliderTop->setFillColor(*accent);
 		sliderMid->setFillColor(*accent);
 		sliderBottom->setFillColor(*accent);
@@ -518,6 +506,7 @@ void ScrollBar::update(){
 		sliderBottom->setFillColor(*lightTheme[3]);
 	}
 
+	redraw = true;
 }
 
 /*update the texture of the ScrollBar to be printed later*/
@@ -527,4 +516,6 @@ bool ScrollBar::updateTexture(SDL_Renderer *renderer){
 	sliderTop->draw(renderer);
 	sliderMid->draw(renderer);
 	sliderBottom->draw(renderer);
+
+	return true;
 }

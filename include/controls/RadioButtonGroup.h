@@ -18,7 +18,6 @@ class RadioButtonGroup : public Control{
 		virtual int getHeight();
 		virtual int getTotalWidth();
 		virtual int getTotalHeight();
-		virtual bool getActive();
 		std::string getLabel();
 		std::string getSelection();
 

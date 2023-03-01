@@ -7,7 +7,7 @@ WIN_INCLUDE_PATHS = -IC:/mingw_dev_lib/include -IC:/mingw_dev_lib/include/SDL2
 
 WIN_LIBRARY_PATHS = -LC:/mingw_dev_lib/lib
 
-COMPILER_FLAGS = -g -w
+COMPILER_FLAGS = -g
 
 LINKER_FLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf
 WIN_LINKER_FLAGS = -lmingw32 -lSDL2main

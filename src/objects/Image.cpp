@@ -1,20 +1,6 @@
 #include <iostream>
 #include <SDL2/SDL_image.h>
-
 #include "objects/Image.h"
-
-
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-	uint rmask = 0x000000ff;
-	uint gmask = 0x0000ff00;
-	uint bmask = 0x00ff0000;
-	uint amask = 0xff000000;
-#else
-	uint rmask = 0xff000000;
-	uint gmask = 0x00ff0000;
-	uint bmask = 0x0000ff00;
-	uint amask = 0x000000ff;
-#endif
 
 
 /*
@@ -33,7 +19,13 @@ Image::Image(int x, int y, std::string fileName){
 		scale = 1;
 		xPos = x;
 		yPos = y;
+
+		if(invertedMode){
+			reload();
+		}
 	}
+
+	fresh = true;
 }
 
 /*
@@ -48,7 +40,7 @@ Image::Image(int x, int y, std::string fileName){
 Image::Image(int x, int y, uint w, uint h, Color color){
 	image = NULL;
 
-	if(image = SDL_CreateRGBSurface(0, w, h, 32, rmask, gmask, bmask, amask)){
+	if(image = SDL_CreateRGBSurface(0, w, h, 32, R_MASK, G_MASK, B_MASK, A_MASK)){
 		SDL_SetSurfaceBlendMode(image, SDL_BLENDMODE_BLEND);
 
 		SDL_FillRect(image, NULL, SDL_MapRGBA(image->format, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()));
@@ -60,6 +52,8 @@ Image::Image(int x, int y, uint w, uint h, Color color){
 		xPos = x;
 		yPos = y;
 	}
+
+	fresh = true;
 }
 
 
@@ -75,12 +69,12 @@ int Image::getHeight(){
 
 /*get the total width*/
 int Image::getTotalWidth(){
-	return getWidth();
+	return width*scale;
 }
 
 /*get the total height*/
 int Image::getTotalHeight(){
-	return getHeight();
+	return height*scale;
 }
 
 /*
@@ -94,8 +88,48 @@ int Image::getScale(){
 /*get the color value of the pixel at the given coordinates*/
 Color Image::getPixel(uint x, uint y){
 	if(image){
-		uint *pixels = (uint *)image->pixels;
-		return Color(pixels[(y * image->w) + x]);
+		uint p;
+		int bpp = image->format->BytesPerPixel;
+		Uint8 *pixel = (Uint8 *)image->pixels + y * image->pitch + x * bpp;
+
+		uchar red;
+		uchar green;
+		uchar blue;
+		uchar alpha;
+
+		switch(bpp){
+			case 1:
+				SDL_GetRGBA(*pixel, image->format, &red, &green, &blue, &alpha);
+				break;
+			case 2:
+				SDL_GetRGBA(*(Uint16 *)pixel, image->format, &red, &green, &blue, &alpha);
+				break;
+			case 3:
+				if(BIG_END){
+					red = pixel[0];
+					green = pixel[1];
+					blue = pixel[2];
+				}else{
+					blue = pixel[0];
+					green = pixel[1];
+					red = pixel[2];
+				}
+
+				alpha = 255;
+				break;
+			case 4:
+				SDL_GetRGBA(*(Uint32 *)pixel, image->format, &red, &green, &blue, &alpha);
+				break;
+			default:
+				return Color(0);
+		}
+
+
+		if((invertedMode && !inversionNeeded) || (!invertedMode && inversionNeeded)){
+			return Color(~red, ~green, ~blue, alpha);
+		}else{
+			return Color(red, green, blue, alpha);
+		}
 	}else{
 		return Color(0);
 	}
@@ -129,11 +163,33 @@ bool Image::setHeight(uint h){
 /*set the color value of the pixel at the given coordinates*/
 bool Image::setPixel(uint x, uint y, Color color){
 	if(image){
-		uint *pixels = (uint *)image->pixels;
-		pixels[(y * image->w) + x] = color.getUint();
+		int bpp = image->format->BytesPerPixel;
+		Uint8 *pixel = (Uint8 *)image->pixels + y * image->pitch + x * bpp;
+
+		switch(bpp){
+			case 1:
+				*pixel = SDL_MapRGBA(image->format, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+				break;
+			case 2:
+				*(Uint16 *)pixel = SDL_MapRGBA(image->format, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+				break;
+			case 3:
+				if(BIG_END){
+					pixel[0] = color.getRed();
+					pixel[1] = color.getGreen();
+					pixel[2] = color.getBlue();
+				}else{
+					pixel[0] = color.getBlue();
+					pixel[1] = color.getGreen();
+					pixel[2] = color.getRed();
+				}
+				break;
+			case 4:
+				*(Uint32 *)pixel = SDL_MapRGBA(image->format, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+				break;
+		}
 
 		redraw = true;
-
 		return true;
 	}else{
 		return false;
@@ -145,14 +201,34 @@ bool Image::setPixel(uint x, uint y, Color color){
 	scale isn't currently used for anything
 */
 bool Image::setScale(uint s){
-	if(s > 0)
-		scale = s;
+	scale = s;
+	return scale == s;
 }
 
 
-/*resizing the image doesn't work yet*/
-bool Image::resize(uint w, uint h, int xOff, int yOff, uint fillColor){
-	return false;
+bool Image::resize(uint w, uint h, int xOff, int yOff, Color color){
+	SDL_Surface *oldImage = image;
+
+	if(image = SDL_CreateRGBSurface(0, w, h, 32, R_MASK, G_MASK, B_MASK, A_MASK)){
+		SDL_SetSurfaceBlendMode(image, SDL_BLENDMODE_BLEND);
+
+		SDL_FillRect(image, NULL, SDL_MapRGBA(image->format, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()));
+
+		SDL_Rect dest = {xOff, yOff, (int)width, (int)height};
+		SDL_BlitSurface(oldImage, NULL, image, &dest);
+
+		SDL_FreeSurface(oldImage);
+
+		file = "";
+		width = w;
+		height = h;
+
+		redraw = true;
+		return true;
+	}else{
+		image = oldImage;
+		return false;
+	}
 }
 
 
@@ -167,6 +243,16 @@ bool Image::load(std::string fileName){
 	}else{
 		return false;
 	}
+}
+
+bool Image::reload(){
+	for(int x=0;x<width;x++){
+		for(int y=0;y<height;y++){
+			setPixel(x, y, getPixel(x, y));
+		}
+	}
+
+	return true;
 }
 
 
@@ -189,6 +275,10 @@ bool Image::boundsCheck(int x, int y){
 
 /*update the texture of the image to be printed later*/
 bool Image::updateTexture(SDL_Renderer *renderer){
+	if(inversionNeeded && !fresh){
+		reload();
+	}
+
 	if(renderer && image){
 
 		SDL_Texture *temp = SDL_CreateTextureFromSurface(renderer, image);
@@ -198,4 +288,7 @@ bool Image::updateTexture(SDL_Renderer *renderer){
 
 		SDL_DestroyTexture(temp);
 	}
+
+	fresh = false;
+	return true;
 }

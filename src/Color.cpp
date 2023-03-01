@@ -1,3 +1,4 @@
+#include "JUI.h"
 #include "Color.h"
 
 
@@ -17,17 +18,29 @@ Color::Color(uint color){
 
 /*get the red value for the color*/
 uchar Color::getRed(){
-	return red;
+	if(invertedMode){
+		return ~red;
+	}else{
+		return red;
+	}
 }
 
 /*get the green value for the color*/
 uchar Color::getGreen(){
-	return green;
+	if(invertedMode){
+		return ~green;
+	}else{
+		return green;
+	}
 }
 
 /*get the blue value for the color*/
 uchar Color::getBlue(){
-	return blue;
+	if(invertedMode){
+		return ~blue;
+	}else{
+		return blue;
+	}
 }
 
 /*get the alpha value for the color*/
@@ -37,7 +50,11 @@ uchar Color::getAlpha(){
 
 /*get the numeric value for the color*/
 uint Color::getUint(){
-	return (red << 24) + (green << 16) + (blue << 8) + alpha;
+	if(BIG_END){
+		return (getRed() << 24) | (getGreen() << 16) | (getBlue() << 8) | alpha;
+	}else{
+		return (alpha << 24) | (getBlue() << 16) | (getGreen() << 8) | getRed();
+	}
 }
 
 
@@ -72,5 +89,7 @@ void Color::setUint(uint color){
 
 /*invert the color values for the color*/
 void Color::invert(){
-	setUint(~getUint() | 0x000000FF);
+	setRed(~getRed());
+	setGreen(~getGreen());
+	setBlue(~getBlue());
 }

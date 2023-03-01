@@ -128,6 +128,8 @@ bool Rectangle::setOutlineThickness(uint thickness){
 bool Rectangle::outline(uint thickness, Color color){
 	setOutlineThickness(thickness);
 	setOutlineColor(color);
+
+	return true;
 }
 
 
@@ -151,10 +153,10 @@ bool Rectangle::updateTexture(SDL_Renderer *renderer){
 
 	if(outlineThickness > 0 && outlineColor.getUint() > 0){
 		SDL_SetRenderDrawColor(renderer, outlineColor.getRed(), outlineColor.getGreen(), outlineColor.getBlue(), outlineColor.getAlpha());
-		SDL_Rect top = {0, 0, width, outlineThickness};
-		SDL_Rect bottom = {0, height - outlineThickness, width, outlineThickness};
-		SDL_Rect left = {0, 0, outlineThickness, height};
-		SDL_Rect right = {width - outlineThickness, 0, outlineThickness, height};
+		SDL_Rect top = {0, 0, (int)width, (int)outlineThickness};
+		SDL_Rect bottom = {0, (int)height - (int)outlineThickness, (int)width, (int)outlineThickness};
+		SDL_Rect left = {0, 0, (int)outlineThickness, (int)height};
+		SDL_Rect right = {(int)width - (int)outlineThickness, 0, (int)outlineThickness, (int)height};
 	
 		SDL_RenderFillRect(renderer, &top);
 		SDL_RenderFillRect(renderer, &bottom);
@@ -162,7 +164,9 @@ bool Rectangle::updateTexture(SDL_Renderer *renderer){
 		SDL_RenderFillRect(renderer, &right);
 	}
 
-	SDL_Rect rect = {outlineThickness, outlineThickness, width - outlineThickness * 2, height - outlineThickness * 2};
+	SDL_Rect rect = {(int)outlineThickness, (int)outlineThickness, (int)width - (int)outlineThickness * 2, (int)height - (int)outlineThickness * 2};
 	SDL_SetRenderDrawColor(renderer, fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), fillColor.getAlpha());
 	SDL_RenderFillRect(renderer, &rect);
+
+	return true;
 }

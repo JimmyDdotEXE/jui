@@ -1,7 +1,7 @@
 #ifndef COLOR_H
 #define COLOR_H
 
-#include "General.h"
+#include "Utility.h"
 
 
 class Color{

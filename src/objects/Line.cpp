@@ -100,12 +100,16 @@ bool Line::setHeight(uint h){
 bool Line::setLength(uint len){
 	length = len;
 
+	redraw = true;
+
 	return length == len;
 }
 
 /*set the color of the line*/
 bool Line::setColor(Color colo){
 	color = colo;
+
+	redraw = true;
 
 	return color.getUint() == colo.getUint();
 }
@@ -146,4 +150,6 @@ bool Line::boundsCheck(int x, int y){
 bool Line::updateTexture(SDL_Renderer *renderer){
 		SDL_SetRenderDrawColor(renderer, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
 		SDL_RenderClear(renderer);
+
+		return true;
 }

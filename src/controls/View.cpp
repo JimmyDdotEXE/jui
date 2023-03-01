@@ -32,8 +32,6 @@ View::View(int x, int y, uint w, uint h){
 
 	scrollCorner = new Rectangle(width-16, height-16, 16, 16);
 
-	activeControl = NULL;
-
 	setX(x);
 	setY(y);
 
@@ -61,14 +59,6 @@ int View::getTotalWidth(){
 /*get the total height*/
 int View::getTotalHeight(){
 	return getHeight();
-}
-
-/*
-	is the control active?
-	the function always returns false
-*/
-bool View::getActive(){
-	return false;
 }
 
 
@@ -678,6 +668,7 @@ bool View::addControl(Control *control){
 		setViewHeight(control->getY() + control->getHeight());
 	}
 
+	control->setWindow(this->getWindow());
 	controls.push_back(control);
 
 	return true;
@@ -698,14 +689,29 @@ bool View::removeControl(Control *control){
 
 /*try to handle the given event*/
 bool View::handleEvent(Event *event){
+	if(event->getControl() != NULL){
+		setActive(false);
+		return true;
+	}
+
+	bool ret = false;
+
+	Control *activeControl = getActiveControl();
 
 	if(verticalBar != NULL){
 		verticalBar->handleEvent(event);
 
 		if(event->getControl() == verticalBar){
+			if(verticalBar->getActive()){
+				setActive(true);
+				setActive(verticalBar);
+			}else{
+				setActive(false);
+			}
+
 			update();
 			event->setControl(this);
-			return true;
+			ret = true;
 		}
 
 	}
@@ -714,9 +720,16 @@ bool View::handleEvent(Event *event){
 		horizontalBar->handleEvent(event);
 
 		if(event->getControl() == horizontalBar){
+			if(horizontalBar->getActive()){
+				setActive(true);
+				setActive(horizontalBar);
+			}else{
+				setActive(false);
+			}
+
 			update();
 			event->setControl(this);
-			return true;
+			ret = true;
 		}
 
 	}
@@ -725,9 +738,15 @@ bool View::handleEvent(Event *event){
 		activeControl->handleEvent(event);
 
 		if(event->getControl() == activeControl){
+			if(activeControl->getActive()){
+				setActive(true);
+			}else{
+				setActive(false);
+			}
+
 			update();
 			event->setControl(this);
-			return true;
+			ret = true;
 		}
 
 	}
@@ -739,10 +758,16 @@ bool View::handleEvent(Event *event){
 			controls.at(i)->handleEvent(event);
 
 			if(event->getControl() == controls.at(i)){
-				activeControl = controls.at(i);
+				if(controls.at(i)->getActive()){
+					setActive(true);
+					setActiveControl(controls.at(i));
+				}else{
+					setActive(false);
+				}
+
 				update();
 				event->setControl(this);
-				return true;
+				ret = true;
 			}
 		}
 
@@ -790,10 +815,12 @@ bool View::handleEvent(Event *event){
 			}
 
 			event->setControl(this);
-			return true;
+			ret = true;
 		}
 
 	}
+
+	return ret;
 }
 
 
@@ -822,6 +849,7 @@ bool View::updateTheme(){
 
 
 	redraw = true;
+	return true;
 }
 
 
@@ -938,7 +966,7 @@ bool View::updateTexture(SDL_Renderer *renderer){
 		SDL_Rect src;
 
 		if(verticalBar && horizontalBar){
-			dest = {0, 0, width - verticalBar->getWidth(), height - horizontalBar->getHeight()};
+			dest = {0, 0, (int)width - verticalBar->getWidth(), (int)height - horizontalBar->getHeight()};
 			src.x = horizontalBar->getPos();
 			src.y = verticalBar->getPos();
 
@@ -951,7 +979,7 @@ bool View::updateTexture(SDL_Renderer *renderer){
 			}
 
 		}else if(verticalBar){
-			dest = {0, 0, width - verticalBar->getWidth(), height};
+			dest = {0, 0, (int)width - verticalBar->getWidth(), (int)height};
 			src.x = 0;
 			src.y = verticalBar->getPos();
 
@@ -960,7 +988,7 @@ bool View::updateTexture(SDL_Renderer *renderer){
 			}
 
 		}else if(horizontalBar){
-			dest = {0, 0, width, height - horizontalBar->getHeight()};
+			dest = {0, 0, (int)width, (int)height - horizontalBar->getHeight()};
 			src.x = horizontalBar->getPos();
 			src.y = 0;
 
@@ -969,7 +997,7 @@ bool View::updateTexture(SDL_Renderer *renderer){
 			}
 
 		}else{
-			dest = {0, 0, width, height};
+			dest = {0, 0, (int)width, (int)height};
 			src.x = 0;
 			src.y = 0;
 		}
@@ -989,6 +1017,9 @@ bool View::updateTexture(SDL_Renderer *renderer){
 		}else if(horizontalBar != NULL){
 			horizontalBar->draw(renderer);
 		}
+
+		return true;
 	}
 
+	return false;
 }

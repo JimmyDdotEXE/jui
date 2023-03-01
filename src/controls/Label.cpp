@@ -40,17 +40,25 @@ int Label::getTotalHeight(){
 	return getHeight();
 }
 
-/*
-	is the control active?
-	the function always returns false
-*/
-bool Label::getActive(){
-	return false;
-}
-
 /*get the text of the label*/
 std::string Label::getText(){
 	return text->getString();
+}
+
+int Label::getTopPadding(){
+	return text->getTopPadding();
+}
+
+int Label::getBottomPadding(){
+	return text->getBottomPadding();
+}
+
+int Label::getLeftPadding(){
+	return text->getLeftPadding();
+}
+
+int Label::getRightPadding(){
+	return text->getRightPadding();
 }
 
 
@@ -90,9 +98,33 @@ bool Label::setHeight(uint h){
 
 /*set the text of the label*/
 bool Label::setText(std::string s){
-	text->setString(s);
-
 	redraw = true;
+	return text->setString(s);
+}
+
+bool Label::setTopPadding(uint pad){
+	redraw = true;
+	return text->setTopPadding(pad);
+}
+
+bool Label::setBottomPadding(uint pad){
+	redraw = true;
+	return text->setBottomPadding(pad);
+}
+
+bool Label::setLeftPadding(uint pad){
+	redraw = true;
+	return text->setLeftPadding(pad);
+}
+
+bool Label::setRightPadding(uint pad){
+	redraw = true;
+	return text->setRightPadding(pad);
+}
+
+bool Label::setPadding(uint pad){
+	redraw = true;
+	return text->setPadding(pad);
 }
 
 
@@ -114,6 +146,7 @@ bool Label::updateTheme(){
 	}
 
 	redraw = true;
+	return true;
 }
 
 /*free all the memory used*/
@@ -145,5 +178,5 @@ void Label::update(){}
 
 /*update the texture of the Label to be printed later*/
 bool Label::updateTexture(SDL_Renderer *renderer){
-	text->draw(renderer);
+	return text->draw(renderer);
 }

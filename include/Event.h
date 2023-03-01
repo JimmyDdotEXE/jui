@@ -1,8 +1,9 @@
 #ifndef EVENT_H
 #define EVENT_H
 
+#include <vector>
 #include <SDL2/SDL.h>
-#include "General.h"
+#include "Utility.h"
 class Control;
 
 
@@ -28,7 +29,8 @@ typedef enum{
 	e_HOLD,
 	e_SCROLL,
 	e_KEYPRESS,
-	e_TEXTENTRY
+	e_TEXTENTRY,
+	e_WINDOW
 } EVENT_EventType;
 
 /*
@@ -98,18 +100,37 @@ typedef enum{
 	m_ALT
 } EVENT_Modifier;
 
+typedef enum{
+	w_SHOWN,
+	w_HIDDEN,
+	w_EXPOSED,
+	w_MOVED,
+	w_RESIZED,
+	w_SIZECHANGED,
+	w_MINIMIZED,
+	w_MAXIMIZED,
+	w_RESTORED,
+	w_ENTER,
+	w_LEAVE,
+	w_FOCUSGAINED,
+	w_FOCUSLOST,
+	w_CLOSE
+} EVENT_Window;
+
 
 class Event{
 	public:
-		Event(int x, int y, EVENT_Button b, EVENT_State s, Event *t=NULL);
-		Event(int x, int y, EVENT_Button b, EVENT_Click c, Event *t=NULL);
-		Event(int x, int y, int oldX, int oldY, Event *t=NULL);
-		Event(int x, int y, int oldX, int oldY, EVENT_Button b, Event *t=NULL);
-		Event(int x, int y, Event *t=NULL);
-		Event(int x, int y, EVENT_Button b, Event *t=NULL);
-		Event(int x, int y, EVENT_ScrollDirection s, EVENT_Modifier m, Event *t=NULL);
-		Event(SDL_Keycode k, EVENT_State s, EVENT_Modifier m, Event *t=NULL);
-		Event(std::string s, Event *t=NULL);
+		Event(int x, int y, EVENT_Button b, EVENT_State s, uint time, int winID, Event *t=NULL);
+		Event(int x, int y, EVENT_Button b, EVENT_Click c, uint time, int winID, Event *t=NULL);
+		Event(int x, int y, int oldX, int oldY, uint time, int winID, Event *t=NULL);
+		Event(int x, int y, int oldX, int oldY, EVENT_Button b, uint time, int winID, Event *t=NULL);
+		Event(int x, int y, uint time, int winID, Event *t=NULL);
+		Event(int x, int y, EVENT_Button b, uint time, int winID, Event *t=NULL);
+		Event(int x, int y, EVENT_ScrollDirection s, EVENT_Modifier m, uint time, int winID, Event *t=NULL);
+		Event(SDL_Keycode k, EVENT_State s, EVENT_Modifier m, uint time, int winID, Event *t=NULL);
+		Event(std::string s, uint time, int winID, Event *t=NULL);
+		Event(EVENT_Window w, uint time, int winID, Event *t=NULL);
+		Event(EVENT_Window w, int data1, int data2, uint time, int winID, Event *t=NULL);
 
 		EVENT_EventType getType();
 		EVENT_Button getButton();
@@ -119,13 +140,18 @@ class Event{
 		SDL_Keycode getKey();
 		EVENT_State getKeyState();
 		EVENT_Modifier getModifier();
+		EVENT_Window getWindowEvent();
 		std::string getText();
 		int getX();
 		int getY();
 		int getPreviousX();
 		int getPreviousY();
+		int getWidth();
+		int getHeight();
 		uint getTimeStamp();
+		int getWindowID();
 		Control *getControl();
+		std::vector<Control *> getControls();
 		Event *getTail();
 
 		bool setControl(Control *c);
@@ -145,6 +171,8 @@ class Event{
 		EVENT_State keyState;
 		EVENT_Modifier mod;
 
+		EVENT_Window windowEvent;
+
 		std::string text;
 
 		int xPos;
@@ -153,9 +181,14 @@ class Event{
 		int previousX;
 		int previousY;
 
+		int width;
+		int height;
+
 		uint timeStamp;
 
-		Control *control;
+		int windowID;
+
+		std::vector<Control *> controls;
 
 		Event *tail;
 };

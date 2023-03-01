@@ -17,15 +17,14 @@ class ComboBox : public Control{
 		virtual int getHeight();
 		virtual int getTotalWidth();
 		virtual int getTotalHeight();
-		virtual bool getActive();
+		bool getDropDown();
 		std::vector<std::string> getSelection();
 
 		virtual bool setX(double x);
 		virtual bool setY(double y);
 		virtual bool setWidth(uint w);
 		virtual bool setHeight(uint h);
-		bool setActive(bool b);
-		bool setFocus(bool b);
+		bool setDropDown(bool b);
 		bool setList(std::vector<std::string> s);
 		bool setSelection(std::vector<std::string> s);
 
@@ -41,12 +40,11 @@ class ComboBox : public Control{
 
 
 		bool multipleEnabled;
+		bool dropDown;
 
 		TextBox *textBox;
 		Button *button;
 		ListView *listView;
-
-		Control *activeControl;
 };
 
 #endif

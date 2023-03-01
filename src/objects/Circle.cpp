@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "General.h"
+#include "Utility.h"
 
 #include "objects/SemiCircle.h"
 #include "objects/Circle.h"
@@ -117,7 +117,6 @@ bool Circle::boundsCheck(int x, int y){
 
 /*update the texture of the circle to be printed later*/
 bool Circle::updateTexture(SDL_Renderer *renderer){
-
 	SemiCircle semi = SemiCircle(0, radius, radius, fillColor);
 	semi.setBlendMode(BLEND_NONE);
 
@@ -128,4 +127,6 @@ bool Circle::updateTexture(SDL_Renderer *renderer){
 	semi.draw(renderer);
 
 	semi.free();
+
+	return true;
 }

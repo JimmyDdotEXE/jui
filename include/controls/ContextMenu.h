@@ -1,31 +1,26 @@
-#ifndef CHECKBOX_H
-#define CHECKBOX_H
+#ifndef CONTEXTMENU_H
+#define CONTEXTMENU_H
 
-#include <string>
-
-#include "objects/Text.h"
-#include "objects/Rectangle.h"
+#include <vector>
+#include "controls/ContextMenuOption.h"
 #include "controls/Control.h"
 
-
-class CheckBox : public Control{
+class ContextMenu : public Control{
 	public:
-		CheckBox(int x, int y, std::string lab);
+		ContextMenu(std::vector<ContextMenuOption *> opt);
 
 		virtual int getWidth();
 		virtual int getHeight();
 		virtual int getTotalWidth();
 		virtual int getTotalHeight();
-		bool getSelected();
-		std::string getLabel();
-		int getPadding();
 
 		virtual bool setX(double x);
 		virtual bool setY(double y);
 		virtual bool setWidth(uint w);
 		virtual bool setHeight(uint h);
-		bool setSelected(bool b);
-		bool setLabel(std::string lab);
+		bool setHoverMode(bool *b);
+
+		bool collapse();
 
 		virtual bool handleEvent(Event *event);
 
@@ -37,11 +32,10 @@ class CheckBox : public Control{
 		virtual void update();
 		virtual bool updateTexture(SDL_Renderer *renderer);
 
-		bool selected;
-
 		Rectangle *base;
-		Rectangle *center;
-		Text *text;
+		std::vector<ContextMenuOption *> options;
+		ContextMenuOption *selected;
+		bool *hoverMode;
 };
 
 #endif

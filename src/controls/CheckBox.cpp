@@ -24,6 +24,8 @@ CheckBox::CheckBox(int x, int y, std::string lab){
 	setX(x);
 	setY(y);
 
+	selected = false;
+
 	updateTheme();
 }
 
@@ -48,9 +50,8 @@ int CheckBox::getTotalHeight(){
 	return std::max(text->getHeight(), getHeight());
 }
 
-/*is the control active?*/
-bool CheckBox::getActive(){
-	return active;
+bool CheckBox::getSelected(){
+	return selected;
 }
 
 /*get the label of the CheckBox*/
@@ -102,27 +103,32 @@ bool CheckBox::setHeight(uint h){
 	return false;
 }
 
-/*set if the control is active*/
-bool CheckBox::setActive(bool a){
-	active = a;
+bool CheckBox::setSelected(bool b){
+	selected = b;
 
-	redraw = true;
+	update();
+	return selected == b;
 }
 
 /*set the label*/
 bool CheckBox::setLabel(std::string lab){
-	text->setString(lab);
+	return text->setString(lab);
 }
 
 
 /*try to handle the given event*/
 bool CheckBox::handleEvent(Event *event){
+	if(event->getControl() != NULL){
+		setActive(false);
+		return true;
+	}
+
 	if(event->getType() == e_CLICK){
 
 		if(event->getButton() == b_LEFT){
 
 			if(boundsCheck(event->getX(), event->getY())){
-				setActive(!active);
+				setSelected(!selected);
 
 				event->setControl(this);
 			}
@@ -150,6 +156,7 @@ bool CheckBox::updateTheme(){
 	}
 
 	redraw = true;
+	return true;
 }
 
 /*free all the memory used*/
@@ -179,9 +186,10 @@ bool CheckBox::boundsCheck(int x, int y){
 /*
 	update anything that needs updated
 	the control decides when to update itself
-	this function does nothing
 */
-void CheckBox::update(){}
+void CheckBox::update(){
+	redraw = true;
+}
 
 /*update the texture of the CkeckBox to be printed later*/
 bool CheckBox::updateTexture(SDL_Renderer *renderer){
@@ -189,7 +197,9 @@ bool CheckBox::updateTexture(SDL_Renderer *renderer){
 
 	text->draw(renderer);
 
-	if(active){
+	if(selected){
 		center->draw(renderer);
 	}
+
+	return true;
 }

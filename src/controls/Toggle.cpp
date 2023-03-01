@@ -50,14 +50,6 @@ int Toggle::getTotalHeight(){
 	return getHeight();
 }
 
-/*
-	is the control active?
-	the function always returns false
-*/
-bool Toggle::getActive(){
-	return false;
-}
-
 /*get the bool pointer that the toggle controls*/
 bool *Toggle::getState(){
 	return state;
@@ -106,13 +98,6 @@ bool Toggle::setHeight(uint h){
 	return false;
 }
 
-/*set if the cotrol is in focus*/
-bool Toggle::setFocus(bool b){
-	focus = b;
-
-	return focus == b;
-}
-
 /*set bool pointer that the toggle controls*/
 bool Toggle::setState(bool *a){
 	state = a;
@@ -125,34 +110,34 @@ bool Toggle::setState(bool *a){
 
 /*try to handle the given event*/
 bool Toggle::handleEvent(Event *event){
+	if(event->getControl() != NULL){
+		setActive(false);
+		return true;
+	}
 
 	if(event->getType() == e_MOUSEPRESS && event->getMouseState() == s_DOWN){
 
 		//if the mouse click happens within the bounds of the button
 		if(boundsCheck(event->getX(), event->getY()) && state != NULL){
-				setFocus(true);
-
+				setActive(true);
 				event->setControl(this);
-
+				return true;
 		}
 
 	//if the event is the release of a mouse click while the button is active
-	}else if(event->getType() == e_CLICK && focus){
+	}else if(event->getType() == e_CLICK && getActive()){
 
-		setFocus(false);
-
+		setActive(false);
 		*state = !*state;
-
 		update();
+		event->setControl(this);
+		return true;
 
 	//if the event is a mouse drag while the button is active
-	}else if(event->getType() == e_DRAG && focus){
-
-			if(focus){
-				setFocus(false);
-			}
-
-
+	}else if(event->getType() == e_DRAG && getActive()){
+		setActive(false);
+		event->setControl(this);
+		return true;
 	}
 
 	return false;
@@ -204,6 +189,7 @@ bool Toggle::updateTheme(){
 	}
 
 	redraw = true;
+	return true;
 }
 
 /*free all the memory used*/
@@ -254,11 +240,11 @@ void Toggle::update(){
 
 /*update the texture of the toggle to be printed later*/
 bool Toggle::updateTexture(SDL_Renderer *renderer){
-
 	baseLeft->draw(renderer);
 	baseRight->draw(renderer);
 	baseMid->draw(renderer);
 
 	slider->draw(renderer);
 
+	return true;
 }

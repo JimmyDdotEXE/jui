@@ -13,11 +13,13 @@
 	uint h: height of the ListView
 	uint size: font size in the ListView
  */
-ListView::ListView(int x, int y, uint w, uint h, uint size){
+ListView::ListView(int x, int y, uint w, uint h, uint size, std::function<bool(std::string)> onDoubleClick){
 	multipleEnabled = false;
 	textureLock = false;
 
 	fontSize = size;
+
+	doubleClick = onDoubleClick;
 
 	base = new Rectangle(0, 0, 1, 1);
 	base->outline(1);
@@ -42,11 +44,13 @@ ListView::ListView(int x, int y, uint w, uint h, uint size){
 	std::vector<std::string> ls: vector of strings to be in the ListView
 	uint size: font size in the ListView
  */
-ListView::ListView(int x, int y, uint w, uint h, std::vector<std::string> ls, uint size){
+ListView::ListView(int x, int y, uint w, uint h, std::vector<std::string> ls, uint size, std::function<bool(std::string)> onDoubleClick){
 	multipleEnabled = false;
 	textureLock = false;
 
 	fontSize = size;
+
+	doubleClick = onDoubleClick;
 
 	base = new Rectangle(0, 0, 1, 1);
 	base->outline(1);
@@ -82,14 +86,6 @@ int ListView::getTotalWidth(){
 /*get the total height*/
 int ListView::getTotalHeight(){
 	return getHeight();
-}
-
-/*
-	is the control active?
-	the function always returns false
-*/
-bool ListView::getActive(){
-	return false;
 }
 
 /*get the current search results of the list*/
@@ -266,23 +262,47 @@ bool ListView::filter(std::string s, e_Search type){
 	}
 
 	view->clear();
+	return true;
 }
 
 
 
 /*try to handle the given event*/
 bool ListView::handleEvent(Event *event){
+	if(event->getControl() != NULL){
+		setActive(false);
+		return true;
+	}
 
 	view->handleEvent(event);
 
 	if(event->getControl() == view){
+		if(view->getActive()){
+			setActive(true);
+			setActiveControl(view);
+		}else{
+			setActive(false);
+		}
 
 		event->setControl(this);
-		redraw = true;
-
+		update();
+		return true;
 	}else if(event->getType() == e_CLICK && boundsCheck(event->getX(), event->getY())){
 
 		if(event->getButton() == b_LEFT){
+			if(event->getClick() == c_DOUBLE && doubleClick != NULL){
+				bool b = false;
+
+				if(getSelection().size() > 0){
+					b = doubleClick(getSelection().at(0));
+				}
+
+				if(b){
+					event->setControl(this);
+				}
+
+				return b;
+			}
 
 			for(int i=0;i<searchList.size();i++){
 				
@@ -298,6 +318,7 @@ bool ListView::handleEvent(Event *event){
 							update();
 
 							event->setControl(this);
+							return true;
 						}
 
 					}
@@ -309,6 +330,8 @@ bool ListView::handleEvent(Event *event){
 		}
 
 	}
+
+	return false;
 }
 
 
@@ -346,6 +369,7 @@ bool ListView::updateTheme(){
 	}
 
 	redraw = true;
+	return true;
 }
 
 /*free all the memory used*/
@@ -418,4 +442,5 @@ bool ListView::updateTexture(SDL_Renderer *renderer){
 	}
 
 	view->draw(renderer);
+	return true;
 }

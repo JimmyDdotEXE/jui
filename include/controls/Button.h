@@ -2,6 +2,7 @@
 #define BUTTON_H
 
 #include <string>
+#include <functional>
 
 #include "objects/Rectangle.h"
 #include "objects/Text.h"
@@ -11,14 +12,19 @@
 
 class Button : public Control{
 	public:
-		Button(int x, int y, std::string lab);
-		Button(int x, int y, Icon *ico);
+		Button(int x, int y, std::string lab,
+						std::function<bool()> onLeftClick=NULL,
+						std::function<bool()> onRightClick=NULL,
+						std::function<bool()> onMiddleClick=NULL);
+		Button(int x, int y, Icon *ico,
+						std::function<bool()> onLeftClick=NULL,
+						std::function<bool()> onRightClick=NULL,
+						std::function<bool()> onMiddleClick=NULL);
 
 		virtual int getWidth();
 		virtual int getHeight();
 		virtual int getTotalWidth();
 		virtual int getTotalHeight();
-		virtual bool getActive();
 		std::string getLabel();
 		Icon *getIcon();
 
@@ -26,8 +32,6 @@ class Button : public Control{
 		virtual bool setY(double y);
 		virtual bool setWidth(uint w);
 		virtual bool setHeight(uint h);
-		bool setActive(bool b);
-		bool setFocus(bool b);
 		bool setLabel(std::string lab);
 		bool setIcon(Icon *ico);
 
@@ -45,14 +49,27 @@ class Button : public Control{
 		virtual void update();
 		virtual bool updateTexture(SDL_Renderer *renderer);
 
+		bool leftClickAvailable();
+		bool rightClickAvailable();
+		bool middleClickAvailable();
+
+		bool setHover(bool b);
+
 
 		Rectangle *base;
 		Text *text;
 		Icon *icon;
 
+		std::function<bool()> lClick;
+		std::function<bool()> rClick;
+		std::function<bool()> mClick;
+
 		bool hasLeftClick;
 		bool hasRightClick;
 		bool hasMiddleClick;
+
+		bool mouseDown;
+		bool hover;
 };
 
 #endif

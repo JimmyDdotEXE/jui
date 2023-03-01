@@ -16,7 +16,7 @@ class RadioButton : public Control{
 		virtual int getHeight();
 		virtual int getTotalWidth();
 		virtual int getTotalHeight();
-		virtual bool getActive();
+		bool getSelected();
 		std::string getLabel();
 		int getPadding();
 
@@ -24,7 +24,7 @@ class RadioButton : public Control{
 		virtual bool setY(double y);
 		virtual bool setWidth(uint w);
 		virtual bool setHeight(uint h);
-		bool setActive(bool a);
+		bool setSelected(bool b);
 		bool setLabel(std::string lab);
 
 		virtual bool handleEvent(Event *event);
@@ -37,6 +37,7 @@ class RadioButton : public Control{
 		virtual void update();
 		virtual bool updateTexture(SDL_Renderer *renderer);
 
+		bool selected;
 
 		Circle *base;
 		Circle *trim;

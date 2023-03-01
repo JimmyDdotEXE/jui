@@ -25,6 +25,7 @@ RadioButton::RadioButton(int x, int y, std::string lab){
 	setX(x);
 	setY(y);
 
+	selected = false;
 	updateTheme();
 }
 
@@ -49,9 +50,8 @@ int RadioButton::getTotalHeight(){
 	return std::max(text->getHeight(), getHeight());
 }
 
-/*is the control active?*/
-bool RadioButton::getActive(){
-	return active;
+bool RadioButton::getSelected(){
+	return selected;
 }
 
 /*get the label of the RadioButton*/
@@ -105,27 +105,32 @@ bool RadioButton::setHeight(uint h){
 	return false;
 }
 
-/*set if the control is active*/
-bool RadioButton::setActive(bool a){
-	active = a;
+bool RadioButton::setSelected(bool b){
+	selected = b;
 
-	redraw = true;
+	update();
+	return selected == b;
 }
 
 /*set the label*/
 bool RadioButton::setLabel(std::string lab){
-	text->setString(lab);
+	return text->setString(lab);
 }
 
 
 /*try to handle the given event*/
 bool RadioButton::handleEvent(Event *event){
+	if(event->getControl() != NULL){
+		setActive(false);
+		return true;
+	}
+
 	if(event->getType() == e_CLICK){
 
 		if(event->getButton() == b_LEFT){
 
-			if(boundsCheck(event->getX(), event->getY()) && !active){
-				setActive(true);
+			if(boundsCheck(event->getX(), event->getY()) && !selected){
+				setSelected(true);
 
 				event->setControl(this);
 			}
@@ -153,6 +158,7 @@ bool RadioButton::updateTheme(){
 	}
 
 	redraw = true;
+	return true;
 }
 
 /*free all the memory used*/
@@ -184,9 +190,10 @@ bool RadioButton::boundsCheck(int x, int y){
 /*
 	update anything that needs updated
 	the control decides when to update itself
-	this function does nothing
 */
-void RadioButton::update(){}
+void RadioButton::update(){
+	redraw = true;
+}
 
 /*update the texture of the RadioButton to be printed later*/
 bool RadioButton::updateTexture(SDL_Renderer *renderer){
@@ -195,7 +202,9 @@ bool RadioButton::updateTexture(SDL_Renderer *renderer){
 
 	text->draw(renderer);
 
-	if(active){
+	if(selected){
 		center->draw(renderer);
 	}
+
+	return true;
 }

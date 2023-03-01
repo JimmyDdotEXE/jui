@@ -7,7 +7,10 @@
 	takes an X position, Y position, and string
 	constructs a label button
 */
-Button::Button(int x, int y, std::string lab){
+Button::Button(int x, int y, std::string lab,
+								std::function<bool()> onLeftClick,
+								std::function<bool()> onRightClick,
+								std::function<bool()> onMiddleClick){
 	text = new Text(1, 1, 12, lab);
 	text->setPadding(-1*text->getDescent());
 
@@ -16,11 +19,16 @@ Button::Button(int x, int y, std::string lab){
 
 	icon = NULL;
 
-	active = false;
+	lClick = onLeftClick;
+	rClick = onRightClick;
+	mClick = onMiddleClick;
 
 	hasLeftClick = false;
 	hasRightClick = false;
 	hasMiddleClick = false;
+
+	mouseDown = false;
+	hover = false;
 
 	setX(x);
 	setY(y);
@@ -34,7 +42,10 @@ Button::Button(int x, int y, std::string lab){
 	takes an X position, Y position, and pointer to an Icon
 	constructs an icon button
 */
-Button::Button(int x, int y, Icon *ico){
+Button::Button(int x, int y, Icon *ico,
+								std::function<bool()> onLeftClick,
+								std::function<bool()> onRightClick,
+								std::function<bool()> onMiddleClick){
 	icon = ico;
 	icon->setX(1);
 	icon->setY(1);
@@ -44,11 +55,16 @@ Button::Button(int x, int y, Icon *ico){
 
 	text = NULL;
 
-	active = false;
+	lClick = onLeftClick;
+	rClick = onRightClick;
+	mClick = onMiddleClick;
 
 	hasLeftClick = false;
 	hasRightClick = false;
 	hasMiddleClick = false;
+
+	mouseDown = false;
+	hover = false;
 
 	setX(x);
 	setY(y);
@@ -88,14 +104,6 @@ int Button::getTotalWidth(){
 */
 int Button::getTotalHeight(){
 	return getHeight();
-}
-
-/*
-	getActive function
-	returns a boolean that tells if the button is active
-*/
-bool Button::getActive(){
-	return active;
 }
 
 /*
@@ -177,35 +185,6 @@ bool Button::setHeight(uint h){
 	return false;
 }
 
-/*set whether the button is active or not*/
-bool Button::setActive(bool b){
-	active = b;
-
-	if(b){
-		textureLock = false;
-	}else{
-		textureLock = true;
-		redraw = true;
-	}
-
-	return active == b;
-}
-
-/*set whether the button is focused on or not*/
-bool Button::setFocus(bool b){
-
-	if(b && !focus){
-		base->setOutlineThickness(base->getOutlineThickness() * 2);
-	}else if(!b && focus){
-		base->setOutlineThickness(base->getOutlineThickness() / 2);
-	}
-
-	focus = b;
-	redraw = true;
-
-	return focus == b;
-}
-
 /*set the text of the button*/
 bool Button::setLabel(std::string lab){
 	if(text){
@@ -253,6 +232,10 @@ bool Button::setIcon(Icon *ico){
 	does nothing until overridden in derived class
 */
 bool Button::leftClick(){
+	if(lClick != NULL){
+		return lClick();
+	}
+
 	return false;
 }
 
@@ -262,6 +245,10 @@ bool Button::leftClick(){
 	does nothing until overridden in derived class
 */
 bool Button::rightClick(){
+	if(rClick != NULL){
+		return rClick();
+	}
+
 	return false;
 }
 
@@ -271,6 +258,10 @@ bool Button::rightClick(){
 	does nothing until overridden in derived class
 */
 bool Button::middleClick(){
+	if(mClick != NULL){
+		return mClick();
+	}
+
 	return false;
 }
 
@@ -280,73 +271,91 @@ bool Button::middleClick(){
 	takes a pointer to an Event
 */
 bool Button::handleEvent(Event *event){
+	if(event->getControl() != NULL){
+		setActive(false);
+		mouseDown = false;
+		setHover(false);
+		return true;
+	}
 
 	//if the event is the start of a mouse click
 	if(event->getType() == e_MOUSEPRESS && event->getMouseState() == s_DOWN){
 
 		//if the mouse click happens within the bounds of the button
 		if(boundsCheck(event->getX(), event->getY())){
-			if(event->getButton() == b_LEFT && hasLeftClick ||
-					event->getButton() == b_RIGHT && hasRightClick ||
-					event->getButton() == b_MIDDLE && hasMiddleClick){
+			if(event->getButton() == b_LEFT && leftClickAvailable() ||
+					event->getButton() == b_RIGHT && rightClickAvailable() ||
+					event->getButton() == b_MIDDLE && middleClickAvailable()){
 				setActive(true);
-
+				mouseDown = true;
+				update();
 				event->setControl(this);
+				return true;
 			}
-
-			update();
-			return active;
 		}
 
 	//if the event is the release of a mouse click while the button is active
-	}else if(event->getType() == e_CLICK && active){
-
-		setActive(false);
-		update();
+	}else if(event->getType() == e_CLICK && getActive()){
 
 		if(boundsCheck(event->getX(), event->getY())){
-			if(event->getButton() == b_LEFT && hasLeftClick){
+			if(event->getButton() == b_LEFT){
 				if(leftClick()){
+					setActive(false);
+					mouseDown = false;
+					update();
+					event->setControl(this);
 					return true;
 				}
-			}else if(event->getButton() == b_RIGHT && hasRightClick){
+			}else if(event->getButton() == b_RIGHT){
 				if(rightClick()){
+					setActive(false);
+					mouseDown = false;
+					update();
+					event->setControl(this);
 					return true;
 				}
-			}else if(event->getButton() == b_MIDDLE && hasMiddleClick){
+			}else if(event->getButton() == b_MIDDLE){
 				if(middleClick()){
+					setActive(false);
+					mouseDown = false;
+					update();
+					event->setControl(this);
 					return true;
 				}
 			}
 		}
 
 	//if the event is a mouse drag while the button is active
-	}else if(event->getType() == e_DRAG && (active || focus)){
+	}else if(event->getType() == e_DRAG && (mouseDown || hover)){
 
-		if(active){
-			setActive(false);
+		if(mouseDown){
+			mouseDown = false;
 		}
 
 		if(!boundsCheck(event->getX(), event->getY())){
-			setFocus(false);
+			setHover(false);
 		}
 
+		setActive(true);
 		update();
 		event->setControl(this);
-
-		return false;
+		return true;
 
 
 	//if the event is a mouse move
 	}else if(event->getType() == e_MOVE){
 
 		if(boundsCheck(event->getX(), event->getY()) && !boundsCheck(event->getPreviousX(), event->getPreviousY())){
-			setFocus(true);
+			setHover(true);
+			setActive(false);
+			event->setControl(this);
 			return true;
 		}else if(!boundsCheck(event->getX(), event->getY()) && boundsCheck(event->getPreviousX(), event->getPreviousY())){
-			setFocus(false);
-			return false;
-		}	
+			setHover(false);
+			setActive(false);
+			event->setControl(this);
+			return true;
+		}
 	}
 
 	return false;
@@ -359,13 +368,13 @@ bool Button::updateTheme(){
 	if(darkMode){
 		base->setFillColor(*darkTheme[1]);
 
-		if(active){
+		if(mouseDown){
 			if(text){
 				text->setColor(base->getFillColor());
 			}else if(icon){
 				icon->setColor(base->getFillColor());
 			}
-		}else if(!active){
+		}else{
 			if(text){
 				text->setColor(*darkTheme[2]);
 			}else if(icon){
@@ -376,13 +385,13 @@ bool Button::updateTheme(){
 	}else{
 		base->setFillColor(*lightTheme[1]);
 
-		if(active){
+		if(mouseDown){
 			if(text){
 				text->setColor(base->getFillColor());
 			}else if(icon){
 				icon->setColor(base->getFillColor());
 			}
-		}else if(!active){
+		}else{
 			if(text){
 				text->setColor(*lightTheme[2]);
 			}else if(icon){
@@ -395,11 +404,12 @@ bool Button::updateTheme(){
 
 	base->setOutlineColor(*accent);
 
-	if(active){
+	if(mouseDown){
 		base->setFillColor(*accent);
 	}
 
 	redraw = true;
+	return true;
 }
 
 /*
@@ -442,7 +452,7 @@ bool Button::boundsCheck(int x, int y){
 	called when an event is handled to update the visuals of the control
 */
 void Button::update(){
-	if(active){
+	if(mouseDown){
 		base->setFillColor(*accent);
 
 		if(darkMode){
@@ -486,12 +496,40 @@ void Button::update(){
 /*update the texture of the button to be printed later*/
 bool Button::updateTexture(SDL_Renderer *renderer){
 
-		base->draw(renderer);
+	base->draw(renderer);
 
-		if(text){
-			text->draw(renderer);
-		}else if(icon){
-			icon->draw(renderer);
-		}
+	if(text){
+		text->draw(renderer);
+	}else if(icon){
+		icon->draw(renderer);
+	}
 
+	return true;
+}
+
+
+bool Button::leftClickAvailable(){
+	return hasLeftClick || lClick != NULL;
+}
+
+bool Button::rightClickAvailable(){
+	return hasRightClick || rClick != NULL;
+}
+
+bool Button::middleClickAvailable(){
+	return hasMiddleClick || mClick != NULL;
+}
+
+
+bool Button::setHover(bool b){
+	if(b && !hover){
+		base->setOutlineThickness(base->getOutlineThickness() * 2);
+	}else if(!b && hover){
+		base->setOutlineThickness(base->getOutlineThickness() / 2);
+	}
+
+	hover = b;
+	redraw = true;
+
+	return hover == b;
 }

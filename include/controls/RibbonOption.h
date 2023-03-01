@@ -1,31 +1,27 @@
-#ifndef CHECKBOX_H
-#define CHECKBOX_H
+#ifndef RIBBONOPTION_H
+#define RIBBONOPTION_H
 
-#include <string>
+#include "controls/ContextMenu.h"
+#include "controls/Button.h"
 
-#include "objects/Text.h"
-#include "objects/Rectangle.h"
-#include "controls/Control.h"
+class Ribbon;
 
-
-class CheckBox : public Control{
+class RibbonOption : public Button{
 	public:
-		CheckBox(int x, int y, std::string lab);
+		RibbonOption(std::string label, ContextMenu *menu=NULL);
 
-		virtual int getWidth();
-		virtual int getHeight();
 		virtual int getTotalWidth();
 		virtual int getTotalHeight();
 		bool getSelected();
-		std::string getLabel();
-		int getPadding();
 
 		virtual bool setX(double x);
 		virtual bool setY(double y);
 		virtual bool setWidth(uint w);
 		virtual bool setHeight(uint h);
 		bool setSelected(bool b);
-		bool setLabel(std::string lab);
+		bool setHoverMode(bool *b);
+
+		virtual bool leftClick();
 
 		virtual bool handleEvent(Event *event);
 
@@ -37,11 +33,9 @@ class CheckBox : public Control{
 		virtual void update();
 		virtual bool updateTexture(SDL_Renderer *renderer);
 
+		ContextMenu *subMenu;
 		bool selected;
-
-		Rectangle *base;
-		Rectangle *center;
-		Text *text;
+		bool *hoverMode;
 };
 
 #endif

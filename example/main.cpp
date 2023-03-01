@@ -4,8 +4,9 @@
 #include <string>
 #include <cstdlib>
 #include <iomanip>
+#include "JUI.h"
 
-#include "General.h"
+#include "Utility.h"
 #include "Window.h"
 #include "Controls.h"
 
@@ -15,40 +16,23 @@ std::string fontLocation = "SourceCodePro-Regular.ttf";
 std::string iconLocation = "Untitled.png";
 
 
-/*derived button class to change the title of the window*/
-class TitleButton : public Button{
-	public:
-		TitleButton(int x, int y, Window *win, TextBox *text) : Button(x, y, "Set Title"){
-			window = win;
-			textBox = text;
-
-			hasLeftClick = true;
-		}
-
-		bool leftClick(){
-			window->setTitle(textBox->getText());
-
-			return window->getTitle() == textBox->getText();
-		}
-
-	protected:
-		Window *window;
-		TextBox *textBox;
-};
+uint mouseDeadZone = 10;
 
 
 /*entry point of the function*/
 int main(int argc, char *argv[]){
-
 	/*load the color scheme of the program*/
 	loadPalette();
 
 	/*start the JUI backend*/
 	start();
 
-	/*creat the window*/
-	Window win(480, 360, "Test Window");
+	/*create the windows*/
+	Window win1(480, 360, "Test Window");
+	mountWindow(&win1);
 
+	Window win2(480, 360, "Second Window");
+	mountWindow(&win2);
 
 	/*define all the needed controls*/
 	View *v = new View(0, 0, 480, 360);
@@ -69,10 +53,14 @@ int main(int argc, char *argv[]){
 
 
 	TextBox *tex = new TextBox(label->getX(), label->getY() + label->getHeight() + 10, 120, 24, "Window Title");
-	tex->setText(win.getTitle());
+	tex->setText(win1.getTitle());
 
 
-	TitleButton *button = new TitleButton(tex->getX(), tex->getY() + tex->getHeight() + 10, &win, tex);
+	Button *button = new Button(tex->getX(), tex->getY() + tex->getHeight() + 10, "Set Title",
+			[&win=win1, tex](){
+				win.setTitle(tex->getText());
+				return win.getTitle() == tex->getText();
+			});
 	button->setX(tex->getX() + (tex->getWidth() - button->getWidth())/2);
 
 
@@ -87,7 +75,7 @@ int main(int argc, char *argv[]){
 	RadioButtonGroup *rad = new RadioButtonGroup(slider->getX() + slider->getWidth() + 10, 0, "Accent Color",
 																								{"Yellow", "Orange", "Red", "Magenta",
 																									"Violet", "Blue", "Cyan", "Green"});
-	rad->setY(win.getHeight() - 10 - rad->getHeight());
+	rad->setY(win1.getHeight() - 10 - rad->getHeight());
 	rad->setBottomLock(true);
 	rad->setSelection("Cyan");
 
@@ -103,34 +91,37 @@ int main(int argc, char *argv[]){
 	darkToggle->setX(v->getWidth() - darkToggle->getWidth() - 10);
 	darkToggle->setRightLock(true);
 
+	Toggle *invertToggle = new Toggle(darkToggle->getX(), darkToggle->getY() + darkToggle->getHeight() + 10, &invertedMode);
+	invertToggle->setRightLock(true);
 
-	/*add the view to the window*/
-	win.addControl(v);
+
+	/*add the view to the main window*/
+	win1.addControl(v);
 
 	/*add all the controls to the view*/
 	v->addControl(tex);
-	v->addControl(slider);
-	v->addControl(label);
 	v->addControl(rad);
 	v->addControl(combo);
 	v->addControl(darkToggle);
+	v->addControl(invertToggle);
 	v->addControl(button);
 	v->addControl(visibleControls);
 
+	//add slider and label to the second window
+	win2.addControl(slider);
+	win2.addControl(label);
 
 	/*run the program as long as the window is open*/
-	while(win.isReady()){
+	while(ready()){
 
-		/*handle the window events*/
-		win.handleEvents();
+		/*check window themes and handle events*/
+		framePrep();
 
 
-		/*clear the window and view based on the darkmode setting*/
+		/*clear the view based on the darkmode setting*/
 		if(darkMode){
-			win.clear(*darkTheme[0]);
 			v->clear(*darkTheme[0]);
 		}else{
-			win.clear(*lightTheme[0]);
 			v->clear(*lightTheme[0]);
 		}
 
@@ -138,50 +129,34 @@ int main(int argc, char *argv[]){
 		/*set highlight color based on changes to the RadioButtons and ComboBox*/
 		if((rad->getSelection() == "Yellow" || combo->getSelection().at(0) == "Yellow") && accent != &highlightColor[0]){
 			accent = &highlightColor[0];
-			win.updateTheme();
-
 			rad->setSelection("Yellow");
 			combo->setSelection({"Yellow"});
 		}else if((rad->getSelection() == "Orange" || combo->getSelection().at(0) == "Orange") && accent != &highlightColor[1]){
 			accent = &highlightColor[1];
-			win.updateTheme();
-
 			rad->setSelection("Orange");
 			combo->setSelection({"Orange"});
 		}else if((rad->getSelection() == "Red" || combo->getSelection().at(0) == "Red") && accent != &highlightColor[2]){
 			accent = &highlightColor[2];
-			win.updateTheme();
-
 			rad->setSelection("Red");
 			combo->setSelection({"Red"});
 		}else if((rad->getSelection() == "Magenta" || combo->getSelection().at(0) == "Magenta") && accent != &highlightColor[3]){
 			accent = &highlightColor[3];
-			win.updateTheme();
-
 			rad->setSelection("Magenta");
 			combo->setSelection({"Magenta"});
 		}else if((rad->getSelection() == "Violet" || combo->getSelection().at(0) == "Violet") && accent != &highlightColor[4]){
 			accent = &highlightColor[4];
-			win.updateTheme();
-
 			rad->setSelection("Violet");
 			combo->setSelection({"Violet"});
 		}else if((rad->getSelection() == "Blue" || combo->getSelection().at(0) == "Blue") && accent != &highlightColor[5]){
 			accent = &highlightColor[5];
-			win.updateTheme();
-
 			rad->setSelection("Blue");
 			combo->setSelection({"Blue"});
 		}else if((rad->getSelection() == "Cyan" || combo->getSelection().at(0) == "Cyan") && accent != &highlightColor[6]){
 			accent = &highlightColor[6];
-			win.updateTheme();
-
 			rad->setSelection("Cyan");
 			combo->setSelection({"Cyan"});
 		}else if((rad->getSelection() == "Green" || combo->getSelection().at(0) == "Green") && accent != &highlightColor[7]){
 			accent = &highlightColor[7];
-			win.updateTheme();
-
 			rad->setSelection("Green");
 			combo->setSelection({"Green"});
 		}
@@ -225,12 +200,8 @@ int main(int argc, char *argv[]){
 
 		label->setText(stream.str());
 
-
-		/*draw all controls*/
-		win.drawControls();
-
-		/*post the current frame to the window*/
-		win.postFrame();
+		/*draw controls and post window frames*/
+		frameCleanUp();
 	}
 
 

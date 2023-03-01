@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include "objects/Rectangle.h"
 #include "objects/DrawObject.h"
 
 
@@ -186,6 +187,19 @@ bool DrawObject::redrawObject(){
 	return redraw;
 }
 
+bool DrawObject::copySection(Rectangle *src, Rectangle *dest, SDL_Renderer *renderer){
+	if(texture != NULL){
+		SDL_Rect srcRect = {(int)src->getX(), (int)src->getY(), src->getWidth(), src->getHeight()};
+		SDL_Rect destRect = {(int)dest->getX(), (int)dest->getY(), dest->getWidth(), dest->getHeight()};
+
+		SDL_RenderCopy(renderer, texture, &srcRect, &destRect);
+
+		return true;
+	}
+
+	return false;
+}
+
 
 /*
 	draw function
@@ -194,7 +208,6 @@ bool DrawObject::redrawObject(){
 */
 bool DrawObject::draw(SDL_Renderer *renderer){
 	if(texture == NULL || !textureLock || redraw || fullRedraw){
-
 		SDL_Texture *tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, getTotalWidth(), getTotalHeight());
 
 		if(tex){
@@ -275,7 +288,7 @@ bool DrawObject::draw(SDL_Renderer *renderer){
 			int width = abs(getWidth() * cos(degreesToRadians(rotation))) + abs(getHeight() * sin(degreesToRadians(rotation)));
 			int height = abs(getWidth() * sin(degreesToRadians(rotation))) + abs(getHeight() * cos(degreesToRadians(rotation)));
 
-			dest = {getX() + (width - getWidth())/2, getY() + (height - getHeight())/2, getTotalWidth(), getTotalHeight()};
+			dest = {(int)xPos + (width - getWidth())/2, (int)yPos + (height - getHeight())/2, getTotalWidth(), getTotalHeight()};
 
 			SDL_RenderCopyEx(renderer, texture, NULL, &dest, rotation, NULL, flip);
 		}

@@ -176,14 +176,14 @@ bool Text::setHeight(uint h){
 
 /*set the size of the font*/
 bool Text::setFontSize(uint size){
-	load(size, color, str);
+	return load(size, color, str);
 }
 
 /*set if the font size takes the top white space into acount*/
 bool Text::setWhitespace(bool w){
 	whitespace = w;
 
-	load(fontSize, color, str);
+	return load(fontSize, color, str);
 }
 
 /*set the string of the text*/
@@ -213,7 +213,7 @@ bool Text::setString(std::string s){
 
 /*set the text color*/
 bool Text::setColor(Color c){
-	load(fontSize, c, str);
+	return load(fontSize, c, str);
 }
 
 /*set left, right, top, and bottom padding to the same value*/
@@ -222,26 +222,32 @@ bool Text::setPadding(uint pad){
 	bottomPadding = pad;
 	leftPadding = pad;
 	rightPadding = pad;
+
+	return true;
 }
 
 /*set the padding above the Text*/
 bool Text::setTopPadding(uint pad){
 	topPadding = pad;
+	return topPadding == pad;
 }
 
 /*set the padding bellow the Text*/
 bool Text::setBottomPadding(uint pad){
 	bottomPadding = pad;
+	return bottomPadding == pad;
 }
 
 /*set the padding to the left of the Text*/
 bool Text::setLeftPadding(uint pad){
 	leftPadding = pad;
+	return leftPadding == pad;
 }
 
 /*set the padding to the right of the Text*/
 bool Text::setRightPadding(uint pad){
 	rightPadding = pad;
+	return rightPadding == pad;
 }
 
 
@@ -331,6 +337,8 @@ bool Text::updateTexture(SDL_Renderer *renderer){
 		SDL_RenderCopy(renderer, temp, NULL, &dest);
 
 		SDL_DestroyTexture(temp);
+		return true;
 	}
 
+	return false;
 }

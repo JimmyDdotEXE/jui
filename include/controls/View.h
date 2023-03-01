@@ -17,7 +17,6 @@ class View : public Control{
 		virtual int getHeight();
 		virtual int getTotalWidth();
 		virtual int getTotalHeight();
-		virtual bool getActive();
 
 		virtual bool setX(double x);
 		virtual bool setY(double y);
@@ -66,8 +65,6 @@ class View : public Control{
 		ScrollBar *verticalBar;
 		ScrollBar *horizontalBar;
 		Rectangle *scrollCorner;
-
-		Control *activeControl;
 
 		std::vector<DrawObject *> drawQueue;
 		std::vector<Control *> controls;

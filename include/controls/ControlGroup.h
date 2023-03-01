@@ -1,30 +1,31 @@
-#ifndef TEXTBOX_H
-#define TEXTBOX_H
+#ifndef CONTROLGROUP_H
+#define CONTROLGROUP_H
 
+#include <vector>
 #include <string>
 
 #include "objects/Rectangle.h"
-#include "objects/Text.h"
-#include "objects/Line.h"
-#include "objects/Icon.h"
 #include "controls/Control.h"
 
 
-class TextBox : public Control{
+class ControlGroup : public Control{
 	public:
-		TextBox(int x, int y, uint w=120, uint h=24, std::string txt="");
+		ControlGroup(int x, int y, uint w, uint h, std::vector<Control *> c={});
 
 		virtual int getWidth();
 		virtual int getHeight();
 		virtual int getTotalWidth();
 		virtual int getTotalHeight();
-		std::string getText();
+		bool getTextureLock();
 
 		virtual bool setX(double x);
 		virtual bool setY(double y);
 		virtual bool setWidth(uint w);
 		virtual bool setHeight(uint h);
-		bool setText(std::string s);
+		bool setTextureLock(bool b);
+
+		bool addControl(Control *control);
+		bool removeControl(Control *control);
 
 		virtual bool handleEvent(Event *event);
 
@@ -38,24 +39,8 @@ class TextBox : public Control{
 
 
 		Rectangle *base;
-		Rectangle *highlightView;
-		Text *leftText;
-		Text *rightText;
-		Text *highlightText;
-		Text *label;
-		Line *cursor;
 
-		Icon *leftGradient;
-		Icon *rightGradient;
-
-		std::string fullString;
-		uint cursorPos;
-		bool mouseDown;
-		int mouseX;
-
-		uint startTime;
-		bool firstClick;
-		bool cursorChanged;
+		std::vector<Control *> controls;
 };
 
 #endif

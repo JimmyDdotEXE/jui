@@ -20,8 +20,16 @@ Control::Control(){
 	lockBottom = false;
 
 	locksForceResize = false;
+
+	ignoreMouseDeadZone = false;
+
+	activeControl = NULL;
 }
 
+
+bool Control::getActive(){
+	return active;
+}
 
 /*is the control visible or not*/
 bool Control::getVisible(){
@@ -73,6 +81,17 @@ Window *Control::getWindow(){
 	return window;
 }
 
+bool Control::setActive(bool b){
+	active = b;
+
+	if(!b && activeControl != NULL){
+		activeControl->setActive(b);
+		activeControl = NULL;
+	}
+
+	return active == b;
+}
+
 
 /*set if the control is visible*/
 bool Control::setVisible(bool b){
@@ -121,4 +140,27 @@ bool Control::setWindow(Window *win){
 	window = win;
 
 	return window == win;
+}
+
+
+/*returns if the control needs the mouse deadzone to be ignored or not*/
+bool Control::isDeadZoneIgnored(){
+	return ignoreMouseDeadZone;
+}
+
+
+
+
+Control *Control::getActiveControl(){
+	return activeControl;
+}
+
+
+bool Control::setActiveControl(Control *c){
+	if(activeControl != NULL && activeControl != c){
+		activeControl->setActive(false);
+	}
+
+	activeControl = c;
+	return activeControl == c;
 }

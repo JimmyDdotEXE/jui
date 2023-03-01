@@ -28,9 +28,10 @@ class Image : public DrawObject{
 		bool setPixel(uint x, uint y, Color color);
 		bool setScale(uint s);
 
-		bool resize(uint w, uint h, int xOff, int yOff, uint fillColor);
+		bool resize(uint w, uint h, int xOff, int yOff, Color color=Color());
 
 		bool load(std::string fileName);
+		bool reload();
 
 		virtual void free();
 		virtual bool boundsCheck(int x, int y);
@@ -44,6 +45,8 @@ class Image : public DrawObject{
 		uint width;
 		uint height;
 		uint scale;
+
+		bool fresh;
 };
 
 #endif

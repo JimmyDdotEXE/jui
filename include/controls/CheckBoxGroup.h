@@ -18,7 +18,6 @@ class CheckBoxGroup : public Control{
 		virtual int getHeight();
 		virtual int getTotalWidth();
 		virtual int getTotalHeight();
-		virtual bool getActive();
 		std::string getLabel();
 		std::vector<std::string> getSelection();
 

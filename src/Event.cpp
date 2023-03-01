@@ -11,25 +11,17 @@
 	EVENT_State s: state of the button for the event
 	Event *t: previous Event that will be the tail of a linked list
  */
-Event::Event(int x, int y, EVENT_Button b, EVENT_State s, Event *t){
-	timeStamp = SDL_GetTicks();
+Event::Event(int x, int y, EVENT_Button b, EVENT_State s, uint time, int winID, Event *t){
+	timeStamp = time;
+	windowID = winID;
 
 	type = e_MOUSEPRESS;
 
 	button = b;
 	mouseState = s;
 
-	mod = m_NONE;
-
-	text = "";
-
 	xPos = x;
 	yPos = y;
-
-	previousX = 0;
-	previousY = 0;
-
-	control = NULL;
 
 	tail = t;
 }
@@ -42,25 +34,17 @@ Event::Event(int x, int y, EVENT_Button b, EVENT_State s, Event *t){
 	EVENT_Click c: number of clicks for the event
 	Event *t: previous Event that will be the tail of a linked list
  */
-Event::Event(int x, int y, EVENT_Button b, EVENT_Click c, Event *t){
-	timeStamp = SDL_GetTicks();
+Event::Event(int x, int y, EVENT_Button b, EVENT_Click c, uint time, int winID, Event *t){
+	timeStamp = time;
+	windowID = winID;
 
 	type = e_CLICK;
 
 	button = b;
 	click = c;
 
-	mod = m_NONE;
-
-	text = "";
-
 	xPos = x;
 	yPos = y;
-
-	previousX = 0;
-	previousY = 0;
-
-	control = NULL;
 
 	tail = t;
 }
@@ -73,22 +57,17 @@ Event::Event(int x, int y, EVENT_Button b, EVENT_Click c, Event *t){
 	int oldY: Y coordinate of the previous event
 	Event *t: previous Event that will be the tail of a linked list
  */
-Event::Event(int x, int y, int oldX, int oldY, Event *t){
-	timeStamp = SDL_GetTicks();
+Event::Event(int x, int y, int oldX, int oldY, uint time, int winID, Event *t){
+	timeStamp = time;
+	windowID = winID;
 
 	type = e_MOVE;
-
-	mod = m_NONE;
-
-	text = "";
 
 	xPos = x;
 	yPos = y;
 
 	previousX = oldX;
 	previousY = oldY;
-
-	control = NULL;
 
 	tail = t;
 }
@@ -102,17 +81,13 @@ Event::Event(int x, int y, int oldX, int oldY, Event *t){
 	EVENT_Button b: mouse button being held in the event
 	Event *t: previous Event that will be the tail of a linked list
  */
-Event::Event(int x, int y, int oldX, int oldY, EVENT_Button b, Event *t){
-	timeStamp = SDL_GetTicks();
+Event::Event(int x, int y, int oldX, int oldY, EVENT_Button b, uint time, int winID, Event *t){
+	timeStamp = time;
+	windowID = winID;
 
 	type = e_DRAG;
 
 	button = b;
-	mouseState = s_DOWN;
-
-	mod = m_NONE;
-
-	text = "";
 
 	xPos = x;
 	yPos = y;
@@ -120,36 +95,23 @@ Event::Event(int x, int y, int oldX, int oldY, EVENT_Button b, Event *t){
 	previousX = oldX;
 	previousY = oldY;
 
-	control = NULL;
-
 	tail = t;
 }
 
 /*
-	constructs DRAG Event
+	constructs HOVER Event
 	int x: X coordinate of the event
 	int y: Y coordinate of the event
-	int oldX: X coordinate of the previous event
-	int oldY: Y coordinate of the previous event
-	EVENT_Button b: mouse button being held in the event
 	Event *t: previous Event that will be the tail of a linked list
  */
-Event::Event(int x, int y, Event *t){
-	timeStamp = SDL_GetTicks();
+Event::Event(int x, int y, uint time, int winID, Event *t){
+	timeStamp = time;
+	windowID = winID;
 
 	type = e_HOVER;
 
-	mod = m_NONE;
-
-	text = "";
-
 	xPos = x;
 	yPos = y;
-
-	previousX = 0;
-	previousY = 0;
-
-	control = NULL;
 
 	tail = t;
 }
@@ -161,8 +123,9 @@ Event::Event(int x, int y, Event *t){
 	EVENT_Button b: mouse button being held in the event
 	Event *t: previous Event that will be the tail of a linked list
  */
-Event::Event(int x, int y, EVENT_Button b, Event *t){
-	timeStamp = SDL_GetTicks();
+Event::Event(int x, int y, EVENT_Button b, uint time, int winID, Event *t){
+	timeStamp = time;
+	windowID = winID;
 
 	type = e_HOLD;
 
@@ -171,15 +134,8 @@ Event::Event(int x, int y, EVENT_Button b, Event *t){
 
 	mod = m_NONE;
 
-	text = "";
-
 	xPos = x;
 	yPos = y;
-
-	previousX = 0;
-	previousY = 0;
-
-	control = NULL;
 
 	tail = t;
 }
@@ -192,8 +148,9 @@ Event::Event(int x, int y, EVENT_Button b, Event *t){
 	EVENT_Modifier m: which mod key is being held
 	Event *t: previous Event that will be the tail of a linked list
  */
-Event::Event(int x, int y, EVENT_ScrollDirection s, EVENT_Modifier m, Event *t){
-	timeStamp = SDL_GetTicks();
+Event::Event(int x, int y, EVENT_ScrollDirection s, EVENT_Modifier m, uint time, int winID, Event *t){
+	timeStamp = time;
+	windowID = winID;
 
 	type = e_SCROLL;
 
@@ -201,15 +158,8 @@ Event::Event(int x, int y, EVENT_ScrollDirection s, EVENT_Modifier m, Event *t){
 
 	mod = m;
 
-	text = "";
-
 	xPos = x;
 	yPos = y;
-
-	previousX = 0;
-	previousY = 0;
-
-	control = NULL;
 
 	tail = t;
 }
@@ -221,24 +171,15 @@ Event::Event(int x, int y, EVENT_ScrollDirection s, EVENT_Modifier m, Event *t){
 	EVENT_Modifier m: which mod key is being held
 	Event *t: previous Event that will be the tail of a linked list
  */
-Event::Event(SDL_Keycode k, EVENT_State s, EVENT_Modifier m, Event *t){
-	timeStamp = SDL_GetTicks();
+Event::Event(SDL_Keycode k, EVENT_State s, EVENT_Modifier m, uint time, int winID, Event *t){
+	timeStamp = time;
+	windowID = winID;
 
 	type = e_KEYPRESS;
 
 	key = k;
 	keyState = s;
 	mod = m;
-
-	text = "";
-
-	xPos = 0;
-	yPos = 0;
-
-	previousX = 0;
-	previousY = 0;
-
-	control = NULL;
 
 	tail = t;
 }
@@ -248,22 +189,52 @@ Event::Event(SDL_Keycode k, EVENT_State s, EVENT_Modifier m, Event *t){
 	std::string s: text that has been entered
 	Event *t: previous Event that will be the tail of a linked list
  */
-Event::Event(std::string s, Event *t){
-	timeStamp = SDL_GetTicks();
+Event::Event(std::string s, uint time, int winID, Event *t){
+	timeStamp = time;
+	windowID = winID;
 
 	type = e_TEXTENTRY;
 
-	mod = m_NONE;
-
 	text = s;
 
-	xPos = 0;
-	yPos = 0;
+	tail = t;
+}
 
-	previousX = 0;
-	previousY = 0;
+Event::Event(EVENT_Window w, uint time, int winID, Event *t){
+	timeStamp = time;
+	windowID = winID;
 
-	control = NULL;
+	type = e_WINDOW;
+
+	windowEvent = w;
+
+	tail = t;
+}
+
+Event::Event(EVENT_Window w, int data1, int data2, uint time, int winID, Event *t){
+	timeStamp = time;
+	windowID = winID;
+
+	type = e_WINDOW;
+
+	windowEvent = w;
+
+	switch(w){
+		case w_MOVED:
+			xPos = data1;
+			yPos = data2;
+			break;
+		case w_RESIZED:
+			width = data1;
+			height = data2;
+			break;
+		case w_SIZECHANGED:
+			width = data1;
+			height = data2;
+			break;
+		default:
+			break;
+	}
 
 	tail = t;
 }
@@ -309,6 +280,10 @@ EVENT_Modifier Event::getModifier(){
 	return mod;
 }
 
+EVENT_Window Event::getWindowEvent(){
+	return windowEvent;
+}
+
 /*get the text entered in the event*/
 std::string Event::getText(){
 	return text;
@@ -334,14 +309,34 @@ int Event::getPreviousY(){
 	return previousY;
 }
 
+int Event::getWidth(){
+	return width;
+}
+
+int Event::getHeight(){
+	return height;
+}
+
 /*get the time stamp of the event*/
 uint Event::getTimeStamp(){
 	return timeStamp;
 }
 
+int Event::getWindowID(){
+	return windowID;
+}
+
 /*get the control that claims the event*/
 Control *Event::getControl(){
-	return control;
+	if(controls.size() > 0){
+		return controls.at(0);
+	}
+
+	return NULL;
+}
+
+std::vector<Control *> Event::getControls(){
+	return controls;
 }
 
 /*get the previous event that makes up the tail of the current event*/
@@ -352,12 +347,13 @@ Event *Event::getTail(){
 
 /*set the control that claims the event*/
 bool Event::setControl(Control *c){
-	control = c;
+	controls.insert(controls.begin(), c);
 
-	return control == c;
+	return controls.at(0) == c;
 }
 
 /*set the previous event that makes up the tail of the current event*/
+//TODO: evaluate if getTail is needed
 bool Event::setTail(Event *t){
 	tail = t;
 

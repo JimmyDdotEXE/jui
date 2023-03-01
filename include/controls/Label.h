@@ -15,14 +15,22 @@ class Label : public Control{
 		virtual int getHeight();
 		virtual int getTotalWidth();
 		virtual int getTotalHeight();
-		virtual bool getActive();
 		std::string getText();
+		int getTopPadding();
+		int getBottomPadding();
+		int getLeftPadding();
+		int getRightPadding();
 
 		virtual bool setX(double x);
 		virtual bool setY(double y);
 		virtual bool setWidth(uint w);
 		virtual bool setHeight(uint h);
 		bool setText(std::string s);
+		bool setTopPadding(uint pad);
+		bool setBottomPadding(uint pad);
+		bool setLeftPadding(uint pad);
+		bool setRightPadding(uint pad);
+		bool setPadding(uint pad);
 
 		virtual bool handleEvent(Event *event);
 

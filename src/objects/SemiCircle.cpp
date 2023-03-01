@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "General.h"
+#include "Utility.h"
 
 #include "objects/Quadrant.h"
 #include "objects/SemiCircle.h"
@@ -127,4 +127,5 @@ bool SemiCircle::updateTexture(SDL_Renderer *renderer){
 	quad.draw(renderer);
 
 	quad.free();
+	return true;
 }

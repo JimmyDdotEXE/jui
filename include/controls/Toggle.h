@@ -15,7 +15,6 @@ class Toggle : public Control{
 		virtual int getHeight();
 		virtual int getTotalWidth();
 		virtual int getTotalHeight();
-		virtual bool getActive();
 		bool *getState();
 
 		virtual bool setX(double x);

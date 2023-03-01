@@ -77,6 +77,8 @@ TextBox::TextBox(int x, int y, uint w, uint h, std::string txt){
 		}
 	}
 
+	firstClick = false;
+	cursorChanged = false;
 
 	setX(x);
 	setY(y);
@@ -103,11 +105,6 @@ int TextBox::getTotalWidth(){
 /*get the total height*/
 int TextBox::getTotalHeight(){
 	return getHeight();
-}
-
-/*is the control active?*/
-bool TextBox::getActive(){
-	return active;
 }
 
 /*get the text in the TextBox*/
@@ -170,54 +167,6 @@ bool TextBox::setHeight(uint h){
 	return false;
 }
 
-/*set if the control is active*/
-bool TextBox::setActive(bool b){
-	active = b;
-
-	if(b){
-		textureLock = false;
-
-		if(focus){
-			focus = false;
-		}else{
-			startTime = SDL_GetTicks();
-		}
-	}else if(!focus){
-		if(cursorPos == leftText->getString().length()){
-			rightText->setString(highlightText->getString() + rightText->getString());
-			highlightText->setString("");
-		}else{
-			leftText->setString(leftText->getString() + highlightText->getString());
-			highlightText->setString("");
-		}
-
-		textureLock = true;
-		redraw = true;
-	}
-
-	return active == b;
-}
-
-/*set if the control is in focus*/
-bool TextBox::setFocus(bool b){
-	focus = b;
-
-	if(b){
-		textureLock = false;
-
-		if(active){
-			setActive(false);
-		}else{
-			startTime = SDL_GetTicks();
-		}
-	}else if(!active){
-		textureLock = true;
-		redraw = true;
-	}
-
-	return focus == b;
-}
-
 /*set the text*/
 bool TextBox::setText(std::string s){
 	fullString = s;
@@ -234,26 +183,31 @@ bool TextBox::setText(std::string s){
 
 /*try to handle the given event*/
 bool TextBox::handleEvent(Event *event){
+	if(event->getControl() != NULL && event->getType() != e_MOVE && event->getType() != e_HOVER){
+		firstClick = false;
+		setActive(false);
+
+		if(cursorPos == leftText->getString().length()){
+			rightText->setString(highlightText->getString() + rightText->getString());
+			highlightText->setString("");
+		}else{
+			leftText->setString(leftText->getString() + highlightText->getString());
+			highlightText->setString("");
+		}
+
+		update();
+		return true;
+	}
+
 	int adjustedX = event->getX() - offsetX - xPos;
 
 	if(event->getType() == e_CLICK){
 
 		if(event->getButton() == b_LEFT && boundsCheck(event->getX(), event->getY())){
-			if(event->getClick() == c_SINGLE){
-
-				if(!active){
-					setActive(true);
-
-					cursorPos = fullString.length();
-
-					leftText->setString("");
-					rightText->setString("");
-					highlightText->setString(fullString);
+			if(!firstClick || event->getClick() == c_DOUBLE){
+				if(!firstClick){
+					firstClick = true;
 				}
-
-				update();
-				event->setControl(this);
-			}else if(event->getClick() == c_DOUBLE){
 
 				cursorPos = fullString.length();
 
@@ -263,10 +217,11 @@ bool TextBox::handleEvent(Event *event){
 
 				update();
 				event->setControl(this);
+				return true;
 			}
 		}
 
-	}else if(event->getType() == e_KEYPRESS && event->getKeyState() == s_DOWN && active){
+	}else if(event->getType() == e_KEYPRESS && event->getKeyState() == s_DOWN && getActive()){
 		if(event->getKey() == SDLK_c && event->getModifier() == m_CONTROL){
 
 			if(highlightText->getString() != ""){
@@ -275,7 +230,7 @@ bool TextBox::handleEvent(Event *event){
 
 			update();
 			event->setControl(this);
-
+			return true;
 		}else if(event->getKey() == SDLK_v && event->getModifier() == m_CONTROL){
 
 			std::string clip = SDL_GetClipboardText();
@@ -285,7 +240,7 @@ bool TextBox::handleEvent(Event *event){
 
 			update();
 			event->setControl(this);
-
+			return true;
 		}else if(event->getKey() == SDLK_BACKSPACE){
 
 			if(highlightText->getString() != ""){
@@ -300,7 +255,7 @@ bool TextBox::handleEvent(Event *event){
 
 			update();
 			event->setControl(this);
-
+			return true;
 		}else if(event->getKey() == SDLK_LEFT){
 
 			if(event->getModifier() == m_SHIFT){
@@ -345,7 +300,7 @@ bool TextBox::handleEvent(Event *event){
 
 			update();
 			event->setControl(this);
-
+			return true;
 		}else if(event->getKey() == SDLK_RIGHT){
 
 			if(event->getModifier() == m_SHIFT){
@@ -388,7 +343,7 @@ bool TextBox::handleEvent(Event *event){
 
 			update();
 			event->setControl(this);
-
+			return true;
 		}else if(event->getKey() == SDLK_UP){
 
 			cursorPos = 0;
@@ -399,7 +354,7 @@ bool TextBox::handleEvent(Event *event){
 
 			update();
 			event->setControl(this);
-
+			return true;
 		}else if(event->getKey() == SDLK_DOWN){
 
 			cursorPos = fullString.length();
@@ -410,11 +365,17 @@ bool TextBox::handleEvent(Event *event){
 
 			update();
 			event->setControl(this);
-
+			return true;
+		}else if(event->getKey() == SDLK_RETURN){
+			//TODO: this should eventually call an onCommit function
+			setActive(false);
+			update();
+			event->setControl(this);
+			return true;
 		}
 
 
-	}else if(event->getType() == e_TEXTENTRY && active){
+	}else if(event->getType() == e_TEXTENTRY && getActive()){
 
 		highlightText->setString("");
 		leftText->setString(leftText->getString() + event->getText());
@@ -424,13 +385,13 @@ bool TextBox::handleEvent(Event *event){
 
 		update();
 		event->setControl(this);
-
+		return true;
 	}else if(event->getType() == e_MOUSEPRESS && event->getMouseState() == s_DOWN){
 
 		if(boundsCheck(event->getX(), event->getY())){
-
-			if(!active){
-				setFocus(true);
+			if(!getActive()){
+				setActive(true);
+				startTime = SDL_GetTicks();
 			}
 
 			
@@ -492,24 +453,36 @@ bool TextBox::handleEvent(Event *event){
 			}
 
 
-
-
 			update();
 			event->setControl(this);
-		}else if(!boundsCheck(event->getX(), event->getY()) && active){
-
+			return true;
+		}else if(!boundsCheck(event->getX(), event->getY()) && firstClick){
+			firstClick = false;
 			setActive(false);
-			update();
 
+			if(cursorPos == leftText->getString().length()){
+				rightText->setString(highlightText->getString() + rightText->getString());
+				highlightText->setString("");
+			}else{
+				leftText->setString(leftText->getString() + highlightText->getString());
+				highlightText->setString("");
+			}
+
+			update();
+			return true;
 		}
 
-	}else if(event->getType() == e_DRAG && (active || focus)){
+	}else if(event->getType() == e_MOUSEPRESS && event->getMouseState() == s_UP && getActive()){
+		if(!firstClick){
+			firstClick = true;
+		}
+
+		event->setControl(this);
+		update();
+		return true;
+	}else if(event->getType() == e_DRAG && getActive()){
 
 		if(boundsCheck(event->getX(), yPos + offsetY)){
-
-			if(!active){
-				setActive(true);
-			}
 
 			
 
@@ -602,8 +575,8 @@ bool TextBox::handleEvent(Event *event){
 
 		update();
 		event->setControl(this);
-
-	}else if(event->getType() == e_HOLD && active && !boundsCheck(event->getX(), event->getY())){
+		return true;
+	}else if(event->getType() == e_HOLD && getActive() && !boundsCheck(event->getX(), event->getY())){
 
 		if(adjustedX < base->getX() && cursorPos != 0 && (SDL_GetTicks() - startTime) % 75 == 0){
 
@@ -633,16 +606,20 @@ bool TextBox::handleEvent(Event *event){
 
 		update();
 		event->setControl(this);
+		return true;
 	}else if(event->getType() == e_MOVE){
 
 		if(boundsCheck(event->getX(), event->getY())){
 			setCursor(SDL_SYSTEM_CURSOR_IBEAM);
-		}else if(boundsCheck(event->getPreviousX(), event->getPreviousY())){
+			cursorChanged = true;
+		}else if(cursorChanged){
 			setCursor(SDL_SYSTEM_CURSOR_ARROW);
+			cursorChanged = false;
 		}
 
 	}
 
+	return false;
 }
 
 
@@ -666,7 +643,7 @@ bool TextBox::updateTheme(){
 
 		base->setFillColor(*darkTheme[1]);
 
-		if(active || focus){
+		if(getActive()){
 			base->setOutlineColor(*accent);
 		}else{
 			base->setOutlineColor(*darkTheme[2]);
@@ -690,7 +667,7 @@ bool TextBox::updateTheme(){
 
 		base->setFillColor(*lightTheme[1]);
 
-		if(active || focus){
+		if(getActive()){
 			base->setOutlineColor(*accent);
 		}else{
 			base->setOutlineColor(*lightTheme[2]);
@@ -702,6 +679,7 @@ bool TextBox::updateTheme(){
 	}
 
 	redraw = true;
+	return true;
 }
 
 /*free all the memory used*/
@@ -753,9 +731,13 @@ bool TextBox::boundsCheck(int x, int y){
 /*
 	update anything that needs updated
 	the control decides when to update itself
-	this function does nothing
 */
 void TextBox::update(){
+	if(getActive()){
+		textureLock = false;
+	}else{
+		textureLock = true;
+	}
 
 	fullString = leftText->getString() + highlightText->getString() + rightText->getString();
 
@@ -789,7 +771,7 @@ void TextBox::update(){
 	highlightView->setWidth(highlightText->getWidth());
 
 
-	if(active || focus){
+	if(getActive()){
 		base->setOutlineColor(*accent);
 	}else if(darkMode){
 		base->setOutlineColor(*darkTheme[2]);
@@ -802,6 +784,7 @@ void TextBox::update(){
 
 /*update the texture of the TextBox to be printed later*/
 bool TextBox::updateTexture(SDL_Renderer *renderer){
+	updateTheme();
 
 	base->draw(renderer);
 
@@ -825,8 +808,9 @@ bool TextBox::updateTexture(SDL_Renderer *renderer){
 	leftGradient->draw(renderer);
 	rightGradient->draw(renderer);
 
-	if((active || focus) && (SDL_GetTicks() - startTime) / 500 % 2 == 0){
+	if(getActive() && (SDL_GetTicks() - startTime) / 500 % 2 == 0){
 		cursor->draw(renderer);
 	}
 
+	return true;
 }

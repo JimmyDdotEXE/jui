@@ -56,11 +56,6 @@ int CheckBoxGroup::getTotalHeight(){
 	return getHeight();
 }
 
-/*is the control active?*/
-bool CheckBoxGroup::getActive(){
-	return false;
-}
-
 /*get the label of the CheckBoxGroup*/
 std::string CheckBoxGroup::getLabel(){
 	return label->getString();
@@ -71,7 +66,7 @@ std::vector<std::string> CheckBoxGroup::getSelection(){
 	std::vector<std::string> ret;
 
 	for(int i=0;i<boxes.size();i++){
-		if(boxes.at(i)->getActive()){
+		if(boxes.at(i)->getSelected()){
 			ret.push_back(boxes.at(i)->getLabel());
 		}
 	}
@@ -143,11 +138,11 @@ bool CheckBoxGroup::setSelection(std::vector<std::string> s){
 
 	for(int i=0;i<boxes.size();i++){
 		if(std::find(s.begin(), s.end(), boxes.at(i)->getLabel()) != s.end()){
-			boxes.at(i)->setActive(true);
+			boxes.at(i)->setSelected(true);
 
 			ret = true;
-		}else if(boxes.at(i)->getActive()){
-			boxes.at(i)->setActive(false);
+		}else if(boxes.at(i)->getSelected()){
+			boxes.at(i)->setSelected(false);
 		}
 	}
 
@@ -189,6 +184,10 @@ bool CheckBoxGroup::addBox(std::string b){
 
 /*try to handle the given event*/
 bool CheckBoxGroup::handleEvent(Event *event){
+	if(event->getControl() != NULL){
+		setActive(false);
+		return true;
+	}
 
 	for(int i=0;i<boxes.size();i++){
 		boxes.at(i)->handleEvent(event);
@@ -225,6 +224,7 @@ bool CheckBoxGroup::updateTheme(){
 	}
 
 	redraw = true;
+	return true;
 }
 
 /*free all the memory used*/
@@ -255,9 +255,10 @@ bool CheckBoxGroup::boundsCheck(int x, int y){
 /*
 	update anything that needs updated
 	the control decides when to update itself
-	this function does nothing
 */
-void CheckBoxGroup::update(){}
+void CheckBoxGroup::update(){
+	redraw = true;
+}
 
 /*update the texture of the CheckBoxGroup to be printed later*/
 bool CheckBoxGroup::updateTexture(SDL_Renderer *renderer){
@@ -269,4 +270,5 @@ bool CheckBoxGroup::updateTexture(SDL_Renderer *renderer){
 		boxes.at(i)->draw(renderer);
 	}
 
+	return true;
 }

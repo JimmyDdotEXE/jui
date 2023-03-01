@@ -33,6 +33,7 @@ bool Icon::setColor(Color color){
 	}
 
 	redraw = true;
+	return true;
 }
 
 
@@ -51,4 +52,5 @@ bool Icon::replaceColor(Color from, Color to){
 	}
 
 	redraw = true;
+	return true;
 }

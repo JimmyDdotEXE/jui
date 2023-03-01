@@ -16,7 +16,6 @@ class Slider : public Control{
 		virtual int getHeight();
 		virtual int getTotalWidth();
 		virtual int getTotalHeight();
-		virtual bool getActive();
 		double getMin();
 		double getMax();
 		double *getTarget();
@@ -26,7 +25,6 @@ class Slider : public Control{
 		virtual bool setY(double y);
 		virtual bool setWidth(uint w);
 		virtual bool setHeight(uint h);
-		bool setActive(bool b);
 		bool setMin(double m);
 		bool setMax(double m);
 		bool setTarget(double *t);

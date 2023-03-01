@@ -15,7 +15,6 @@ class ScrollBar : public Control{
 		virtual int getHeight();
 		virtual int getTotalWidth();
 		virtual int getTotalHeight();
-		virtual bool getActive();
 		int getTotalSize();
 		int getSliderSize();
 		int getPos();
@@ -24,7 +23,6 @@ class ScrollBar : public Control{
 		virtual bool setY(double y);
 		virtual bool setWidth(uint w);
 		virtual bool setHeight(uint h);
-		bool setActive(bool b);
 		bool setTotalSize(uint s);
 		bool setSliderSize(uint s);
 		bool setPos(uint pos);

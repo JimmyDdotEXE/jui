@@ -3,27 +3,6 @@
 
 
 /*
-	ComboBoxButton class
-	derived from the button class
-*/
-class ComboBoxButton : public Button{
-	public:
-		ComboBoxButton(int x, int y, Icon *ico, ComboBox *combo) : Button(x, y, ico){
-			comboBox = combo;
-
-			hasLeftClick = true;
-		}
-
-		bool leftClick(){
-			return comboBox->setActive(!comboBox->getActive());
-		}
-
-	protected:
-		ComboBox *comboBox;
-};
-
-
-/*
 	ComboBox constructor
 
 	int x: X position of the ComboBox
@@ -68,11 +47,13 @@ ComboBox::ComboBox(int x, int y, uint w, uint h){
 
 	textBox = new TextBox(0, 0, w - h, h);
 
-	button = new ComboBoxButton(textBox->getWidth(), 0, icon, this);
+	button = new Button(textBox->getWidth(), 0, icon, [this](){
+		return this->setDropDown(!this->getDropDown());
+	});
 
 	listView = new ListView(0, h, w, h * 10, h/2);
 
-	activeControl = NULL;
+	dropDown = false;
 
 	setX(x);
 	setY(y);
@@ -101,9 +82,8 @@ int ComboBox::getTotalHeight(){
 	return textBox->getHeight() + listView->getHeight();
 }
 
-/*is the control active?*/
-bool ComboBox::getActive(){
-	return active;
+bool ComboBox::getDropDown(){
+	return dropDown;
 }
 
 /*get the currently selected list elements*/
@@ -151,27 +131,17 @@ bool ComboBox::setHeight(uint h){
 }
 
 /*set if the control is active*/
-bool ComboBox::setActive(bool b){
-	active = b;
+bool ComboBox::setDropDown(bool b){
+	dropDown = b;
 
 	if(b){
 		textureLock = false;
 
 		textBox->setText("");
-		update();
 
 		button->getIcon()->setRotation(180);
 		button->redrawObject();
-
-		if(focus){
-			focus = false;
-		}
-
-	}else if(!focus){
-
-		textBox->setText("");
-		update();
-
+	}else{
 		std::string s;
 		std::vector<std::string> sel = listView->getSelection();
 
@@ -189,124 +159,133 @@ bool ComboBox::setActive(bool b){
 		button->getIcon()->setRotation(0);
 		button->redrawObject();
 
-		activeControl = NULL;
+		setActiveControl(NULL);
 
 		textureLock = true;
-		redraw = true;
 	}
 
-	return active == b;
-}
-
-/*set if the control is in focus*/
-bool ComboBox::setFocus(bool b){
-	focus = b;
-
-	if(b){
-		textureLock = false;
-
-		if(active){
-			setActive(false);
-		}
-	}else if(!active){
-		textureLock = true;
-		redraw = true;
-	}
-
-	return focus == b;
+	update();
+	return dropDown == b;
 }
 
 /*set the list*/
 bool ComboBox::setList(std::vector<std::string> s){
 	listView->setList(s);
-
 	update();
+	return true;
 }
 
 /*set multiple current selections*/
 bool ComboBox::setSelection(std::vector<std::string> s){
 	listView->setSelection(s);
-	setActive(false);
+	setDropDown(false);
+	return true;
 }
 
 
 /*try to handle the given event*/
 bool ComboBox::handleEvent(Event *event){
+	if(event->getControl() != NULL && event->getType() != e_MOVE && event->getType() != e_HOVER){
+		setActive(false);
+		setDropDown(false);
+		update();
+		return true;
+	}
 
+	bool ret = false;
+
+	Control *aControl = getActiveControl();
 	std::vector<std::string> sel = listView->getSelection();
 
-	if(event->getType() == e_MOVE || event->getType() == e_HOVER){
-		if(boundsCheck(event->getX(), event->getY()) && !(active || focus)){
-			setFocus(true);
-		}else if(!boundsCheck(event->getX(), event->getY()) && focus){
-			setFocus(false);
-		}
-	}else if(event->getType() == e_CLICK){
-		if(!boundsCheck(event->getX(), event->getY()) && active){
+	if(event->getType() == e_CLICK){
+		if(!boundsCheck(event->getX(), event->getY()) && (getActive() || dropDown)){
 			setActive(false);
+			setDropDown(false);
+			update();
+			ret = true;
 		}
 	}
 
 
-	if(activeControl != NULL){
-		activeControl->handleEvent(event);
+	if(aControl != NULL){
+		aControl->handleEvent(event);
 
-		if(event->getControl() == activeControl){
+		if(event->getControl() == aControl){
+			if(!aControl->getActive()){
+				setActive(false);
+			}
+
 			update();
 			event->setControl(this);
-			return true;
+			ret = true;
 		}
 	}
 
 
-	if(activeControl != textBox){
+	if(aControl != textBox){
 		std::string text = textBox->getText();
 		textBox->handleEvent(event);
 
 		if(event->getControl() == textBox){
-
-			if(!active){
+			if(textBox->getActive()){
 				setActive(true);
+				setActiveControl(textBox);
+
+				if(!dropDown){
+					setDropDown(true);
+				}
+			}else{
+				setActive(false);
 			}
 
-			if(text != textBox->getText()){
-				update();
-			}
-
-			activeControl = textBox;
+			update();
 			event->setControl(this);
-			return true;
+			ret = true;
 		}
 	}
 
 
-	if(activeControl != button){
+	if(aControl != button){
 		button->handleEvent(event);
 
 		if(event->getControl() == button){
-			activeControl = button;
+			if(button->getActive()){
+				setActive(true);
+				setActiveControl(button);
+			}else{
+				setActive(false);
+			}
+
+			update();
 			event->setControl(this);
-			return true;
+			ret = true;
 		}
 	}
 
 
-	if(active && activeControl != listView){
+	if(dropDown && aControl != listView){
 		listView->handleEvent(event);
 
 		if(event->getControl() == listView){
 
 			if(sel != listView->getSelection() && !multipleEnabled){
 				setActive(false);
+				setDropDown(false);
+			}else if(listView->getActive()){
+				setActive(true);
+				setActiveControl(listView);
+			}else{
+				setActive(false);
+				setDropDown(false);
 			}
 
-			activeControl = listView;
+			update();
 			event->setControl(this);
-			return true;
+			ret = true;
 		}
 	}
 
-	return false;
+	return ret;
 }
 
 
@@ -317,6 +296,7 @@ bool ComboBox::updateTheme(){
 	listView->updateTheme();
 
 	redraw = true;
+	return true;
 }
 
 /*free all the memory used*/
@@ -337,7 +317,7 @@ bool ComboBox::boundsCheck(int x, int y){
 	x -= getOffsetX();
 	y -= getOffsetY();
 
-	if(!active){
+	if(!dropDown){
 		return x >= xPos && x < xPos + getWidth() && y >= yPos && y < yPos + getHeight();
 	}else{
 		return x >= xPos && x < xPos + getTotalWidth() && y >= yPos && y < yPos + getTotalHeight();
@@ -363,6 +343,8 @@ void ComboBox::update(){
 	}else{
 		listView->setHeight(10 * searchList.at(0)->text.getHeight() + 2);
 	}
+
+	redraw = true;
 }
 
 /*update the texture of the ComboBox to be printed later*/
@@ -370,7 +352,9 @@ bool ComboBox::updateTexture(SDL_Renderer *renderer){
 	textBox->draw(renderer);
 	button->draw(renderer);
 
-	if(active){
+	if(dropDown){
 		listView->draw(renderer);
 	}
+
+	return true;
 }

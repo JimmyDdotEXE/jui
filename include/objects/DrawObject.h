@@ -2,11 +2,12 @@
 #define DRAWOBJECT_H
 
 #include <SDL2/SDL.h>
-#include "General.h"
+#include "JUI.h"
 #include "Color.h"
 
 typedef enum{BLEND_NONE, BLEND_ALPHA} BlendMode;
 
+class Rectangle;
 
 class DrawObject{
 	public:
@@ -38,6 +39,7 @@ class DrawObject{
 		bool setBlendMode(BlendMode m);
 
 		bool redrawObject();
+		bool copySection(Rectangle *src, Rectangle *dest, SDL_Renderer *renderer);
 
 		bool draw(SDL_Renderer *renderer);
 		virtual void free() =0;

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cmath>
 
-#include "General.h"
+#include "Utility.h"
 
 #include "objects/Image.h"
 #include "objects/Quadrant.h"
@@ -172,4 +172,5 @@ bool Quadrant::updateTexture(SDL_Renderer *renderer){
 	}
 
 	im.free();
+	return true;
 }

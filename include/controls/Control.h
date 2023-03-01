@@ -14,7 +14,7 @@ class Control : public DrawObject{
 		virtual int getHeight() =0;
 		virtual int getTotalWidth() =0;
 		virtual int getTotalHeight() =0;
-		virtual bool getActive() =0;
+		bool getActive();
 		bool getVisible();
 		bool getLeftLock();
 		bool getRightLock();
@@ -27,6 +27,7 @@ class Control : public DrawObject{
 		virtual bool setY(double y) =0;
 		virtual bool setWidth(uint w) =0;
 		virtual bool setHeight(uint h) =0;
+		bool setActive(bool b);
 		bool setVisible(bool b);
 		bool setLeftLock(bool b);
 		bool setRightLock(bool b);
@@ -35,6 +36,8 @@ class Control : public DrawObject{
 		bool setLockResize(bool b);
 		bool setWindow(Window *win);
 
+		bool isDeadZoneIgnored();
+
 		virtual bool handleEvent(Event *event) =0;
 
 		virtual bool updateTheme() =0;
@@ -42,12 +45,13 @@ class Control : public DrawObject{
 		virtual bool boundsCheck(int x, int y) =0;
 
 	protected:
+		Control *getActiveControl();
+
+		bool setActiveControl(Control *c);
+
 		virtual void update() =0;
 		virtual bool updateTexture(SDL_Renderer *renderer) =0;
 
-
-		bool active;
-		bool focus;
 
 		bool visible;
 
@@ -59,6 +63,14 @@ class Control : public DrawObject{
 		bool lockBottom;
 
 		bool locksForceResize;
+
+		bool ignoreMouseDeadZone;
+
+	private:
+		bool active;
+		bool focus;
+
+		Control *activeControl;
 };
 
 #endif

@@ -55,11 +55,6 @@ int RadioButtonGroup::getTotalHeight(){
 	return getHeight();
 }
 
-/*is the control active?*/
-bool RadioButtonGroup::getActive(){
-	return false;
-}
-
 /*get the label of the RadioButtonGroup*/
 std::string RadioButtonGroup::getLabel(){
 	return label->getString();
@@ -68,7 +63,7 @@ std::string RadioButtonGroup::getLabel(){
 /*get currently selected member of the RadioButtonGroup*/
 std::string RadioButtonGroup::getSelection(){
 	for(int i=0;i<buttons.size();i++){
-		if(buttons.at(i)->getActive()){
+		if(buttons.at(i)->getSelected()){
 			return buttons.at(i)->getLabel();
 		}
 	}
@@ -141,11 +136,11 @@ bool RadioButtonGroup::setSelection(std::string s){
 
 	for(int i=0;i<buttons.size();i++){
 		if(buttons.at(i)->getLabel() == s){
-			buttons.at(i)->setActive(true);
+			buttons.at(i)->setSelected(true);
 
 			ret = true;
-		}else if(buttons.at(i)->getActive()){
-			buttons.at(i)->setActive(false);
+		}else if(buttons.at(i)->getSelected()){
+			buttons.at(i)->setSelected(false);
 		}
 	}
 
@@ -186,6 +181,10 @@ bool RadioButtonGroup::addButton(std::string b){
 
 /*try to handle the given event*/
 bool RadioButtonGroup::handleEvent(Event *event){
+	if(event->getControl() != NULL){
+		setActive(false);
+		return true;
+	}
 
 	for(int i=0;i<buttons.size();i++){
 		buttons.at(i)->handleEvent(event);
@@ -194,7 +193,7 @@ bool RadioButtonGroup::handleEvent(Event *event){
 
 			for(int x=0;x<buttons.size();x++){
 				if(buttons.at(x) != buttons.at(i)){
-					buttons.at(x)->setActive(false);
+					buttons.at(x)->setSelected(false);
 				}
 			}
 
@@ -230,6 +229,7 @@ bool RadioButtonGroup::updateTheme(){
 	}
 
 	redraw = true;
+	return true;
 }
 
 /*free all the memory used*/
@@ -260,8 +260,10 @@ bool RadioButtonGroup::boundsCheck(int x, int y){
 /*
 	update anything that needs updated
 	the control decides when to update itself
-	this function does nothing
-*/void RadioButtonGroup::update(){}
+*/
+void RadioButtonGroup::update(){
+	redraw = true;
+}
 
 /*update the texture of the RadioButtonGroup to be printed later*/
 bool RadioButtonGroup::updateTexture(SDL_Renderer *renderer){
@@ -273,4 +275,5 @@ bool RadioButtonGroup::updateTexture(SDL_Renderer *renderer){
 		buttons.at(i)->draw(renderer);
 	}
 
+	return true;
 }

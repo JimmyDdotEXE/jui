@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <functional>
 
 #include "objects/Rectangle.h"
 #include "objects/Text.h"
@@ -19,14 +20,13 @@ typedef struct{
 
 class ListView : public Control{
 	public:
-		ListView(int x, int y, uint w, uint h, uint size=12);
-		ListView(int x, int y, uint w, uint h, std::vector<std::string> ls, uint size=12);
+		ListView(int x, int y, uint w, uint h, uint size=12, std::function<bool(std::string)> onDoubleClick=NULL);
+		ListView(int x, int y, uint w, uint h, std::vector<std::string> ls, uint size=12, std::function<bool(std::string)> onDoubleClick=NULL);
 
 		virtual int getWidth();
 		virtual int getHeight();
 		virtual int getTotalWidth();
 		virtual int getTotalHeight();
-		virtual bool getActive();
 		std::vector<t_Entry *> getSearchList();
 		std::vector<std::string> getSelection();
 
@@ -61,6 +61,8 @@ class ListView : public Control{
 		std::vector<t_Entry *> selected;
 		std::vector<t_Entry *> searchList;
 		std::vector<t_Entry> fullList;
+
+		std::function<bool(std::string)> doubleClick;
 };
 
 #endif

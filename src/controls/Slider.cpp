@@ -76,11 +76,6 @@ int Slider::getTotalHeight(){
 	return getHeight();
 }
 
-/*is the control active?*/
-bool Slider::getActive(){
-	return active;
-}
-
 
 /*set the X position*/
 bool Slider::setX(double x){
@@ -126,23 +121,14 @@ bool Slider::setHeight(uint h){
 	return false;
 }
 
-/*set of the control is active*/
-bool Slider::setActive(bool b){
-	active = b;
-
-	if(b){
-		textureLock = false;
-	}else{
-		textureLock = true;
-		redraw = true;
-	}
-
-	return active == b;
-}
-
 
 /*try to handle the given event*/
 bool Slider::handleEvent(Event *event){
+	if(event->getControl() != NULL){
+		setActive(false);
+		return true;
+	}
+
 	uint temp = SDL_GetTicks();
 
 	//Handle scroll wheel event
@@ -158,6 +144,7 @@ bool Slider::handleEvent(Event *event){
 
 				update();
 				event->setControl(this);
+				return true;
 			}else if(event->getScrollDirection() == w_DOWN){
 
 				if(*target - incrementSize < *target && *target - incrementSize >= min){
@@ -169,6 +156,7 @@ bool Slider::handleEvent(Event *event){
 
 				update();
 				event->setControl(this);
+				return true;
 			}
 		}
 
@@ -231,19 +219,23 @@ bool Slider::handleEvent(Event *event){
 
 				update();
 				event->setControl(this);
+			}else{
+				setActive(false);
+				update();
+				return true;
 			}
 
-
+			return true;
 		}
 
 	//Handle mouse release event
-	}else if(event->getType() == e_HOVER && active){
+	}else if(event->getType() == e_HOVER && getActive()){
 			setActive(false);
-
 			update();
+			return true;
 
 	//Handle mouse move event
-	}else if(event->getType() == e_DRAG && active){
+	}else if(event->getType() == e_DRAG && getActive()){
 
 		if(orientation == HORIZONTAL){
 
@@ -287,7 +279,7 @@ bool Slider::handleEvent(Event *event){
 
 		update();
 		event->setControl(this);
-
+		return true;
 	}
 
 	return false;
@@ -314,6 +306,7 @@ bool Slider::updateTheme(){
 	}
 
 	redraw = true;
+	return true;
 }
 
 /*free all the memory used*/
@@ -364,7 +357,7 @@ void Slider::update(){
 	}
 
 
-	if(active){
+	if(getActive()){
 		sliderMid->setFillColor(*accent);
 	}else if(darkMode){
 		sliderMid->setFillColor(*darkTheme[4]);
@@ -385,4 +378,5 @@ bool Slider::updateTexture(SDL_Renderer *renderer){
 	sliderBase->draw(renderer);
 	sliderMid->draw(renderer);
 
+	return true;
 }
