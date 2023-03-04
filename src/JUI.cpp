@@ -25,17 +25,17 @@
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 	const bool BIG_END = true;
 
-	const uint R_MASK = 0xff000000;
-	const uint G_MASK = 0x00ff0000;
-	const uint B_MASK = 0x0000ff00;
-	const uint A_MASK = 0x000000ff;
-#else
-	const bool BIG_END = false;
-
 	const uint R_MASK = 0x000000ff;
 	const uint G_MASK = 0x0000ff00;
 	const uint B_MASK = 0x00ff0000;
 	const uint A_MASK = 0xff000000;
+#else
+	const bool BIG_END = false;
+
+	const uint R_MASK = 0xff000000;
+	const uint G_MASK = 0x00ff0000;
+	const uint B_MASK = 0x0000ff00;
+	const uint A_MASK = 0x000000ff;
 #endif
 
 bool fullRedraw = false;

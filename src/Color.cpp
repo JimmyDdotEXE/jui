@@ -51,9 +51,9 @@ uchar Color::getAlpha(){
 /*get the numeric value for the color*/
 uint Color::getUint(){
 	if(BIG_END){
-		return (getRed() << 24) | (getGreen() << 16) | (getBlue() << 8) | alpha;
-	}else{
 		return (alpha << 24) | (getBlue() << 16) | (getGreen() << 8) | getRed();
+	}else{
+		return (getRed() << 24) | (getGreen() << 16) | (getBlue() << 8) | alpha;
 	}
 }
 
@@ -80,10 +80,17 @@ void Color::setAlpha(uchar a){
 
 /*set the numeric value for the color*/
 void Color::setUint(uint color){
-	red = color >> 24;
-	green = color << 8 >> 24;
-	blue = color << 16 >> 24;
-	alpha = color << 24 >> 24;
+	if(BIG_END){
+		alpha = color >> 24;
+		blue = color << 8 >> 24;
+		green = color << 16 >> 24;
+		red = color << 24 >> 24;
+	}else{
+		red = color >> 24;
+		green = color << 8 >> 24;
+		blue = color << 16 >> 24;
+		alpha = color << 24 >> 24;
+	}
 }
 
 
