@@ -39,6 +39,7 @@
 #endif
 
 bool fullRedraw = false;
+uint lastFullRedraw = SDL_GetTicks();
 
 Color baseColor[8];
 Color highlightColor[8];
@@ -454,6 +455,12 @@ bool postWindowFrames(){
 		ret = ret && it->second->postFrame();
 	}
 
+	if(fullRedraw){
+		fullRedraw = false;
+		lastFullRedraw = SDL_GetTicks();
+	}
+
+	inversionNeeded = false;
 	return ret;
 }
 

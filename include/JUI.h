@@ -22,6 +22,7 @@ extern const uint B_MASK;
 extern const uint A_MASK;
 
 extern bool fullRedraw;
+extern uint lastFullRedraw;
 
 extern std::string fontLocation;
 extern std::string iconLocation;

@@ -66,6 +66,8 @@ class DrawObject{
 
 		bool redraw;
 		bool textureLock;
+
+		uint lastRender;
 };
 
 #endif

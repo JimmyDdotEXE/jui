@@ -368,8 +368,6 @@ bool Window::postFrame(){
 	}
 
 	SDL_RenderPresent(renderer);
-	fullRedraw = false;
-	inversionNeeded = false;
 	return true;
 }
 

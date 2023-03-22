@@ -25,6 +25,8 @@ DrawObject::DrawObject(){
 
 	redraw = false;
 	textureLock = true;
+
+	lastRender = 0;
 }
 
 
@@ -207,7 +209,7 @@ bool DrawObject::copySection(Rectangle *src, Rectangle *dest, SDL_Renderer *rend
 	draws the object's texture to the renderer
 */
 bool DrawObject::draw(SDL_Renderer *renderer){
-	if(texture == NULL || !textureLock || redraw || fullRedraw){
+	if(texture == NULL || !textureLock || redraw || fullRedraw || lastRender < lastFullRedraw){
 		SDL_Texture *tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, getTotalWidth(), getTotalHeight());
 
 		if(tex){
@@ -225,6 +227,7 @@ bool DrawObject::draw(SDL_Renderer *renderer){
 			SDL_SetRenderTarget(renderer, oldTarget);
 		}
 
+		lastRender = SDL_GetTicks();
 	}
 
 	if(texture){
