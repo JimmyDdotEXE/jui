@@ -15,6 +15,8 @@ double radiansToDegrees(double r);
 bool isNumeric(std::string s);
 bool isDirectory(std::string s);
 
+bool mkDir(std::string dir);
+
 std::string numString(int num);
 int stringInt(std::string s);
 std::string stringLower(std::string s);

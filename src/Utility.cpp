@@ -4,6 +4,13 @@
 #include <cctype>
 #include <cmath>
 #include <dirent.h>
+
+#ifdef unix
+	#include <sys/stat.h>
+#elif _WIN32
+	#include <direct.h>
+#endif
+
 #include "Utility.h"
 
 
@@ -42,6 +49,17 @@ bool isDirectory(std::string s){
 	}else{
 		return false;
 	}
+}
+
+
+bool mkDir(std::string dir){
+#ifdef unix
+	return !mkdir(dir.c_str(), 0700);
+#elif _WIN32
+	return !_mkdir(dir.c_str());
+#endif
+
+	return false;
 }
 
 
