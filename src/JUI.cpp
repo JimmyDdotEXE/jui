@@ -208,8 +208,11 @@ bool unmountWindow(Window *win){
 		fullRedraw = true;
 		std::unordered_map<int, Window *>::iterator it;
 
-		for(it = windowMap.begin();it != windowMap.end();it++){
-			it->second->refreshRenderer();
+		//only rebuild renderers of other windows on unix systems
+		if(sys == UNIX){
+			for(it = windowMap.begin();it != windowMap.end();it++){
+				it->second->refreshRenderer();
+			}
 		}
 
 		return true;

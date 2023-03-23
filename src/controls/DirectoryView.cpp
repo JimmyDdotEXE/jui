@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <algorithm>
 #include "Utility.h"
 #include "controls/DirectoryView.h"
 
