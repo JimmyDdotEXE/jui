@@ -271,6 +271,13 @@ bool Window::handleEvent(Event *event){
 			case w_RESIZED:
 				setWidth(event->getWidth());
 				setHeight(event->getHeight());
+
+				//redraw everything on resize on windows
+				//could probably be a window redraw instead of program wide
+				if(sys == WIN){
+					fullRedraw = true;
+				}
+
 				break;
 			case w_SIZECHANGED:
 				setWidth(event->getWidth());
@@ -296,6 +303,13 @@ bool Window::handleEvent(Event *event){
 				break;
 			case w_FOCUSGAINED:
 				keyboardFocus = true;
+
+				//redraw everything on focus gain on windows
+				//could probably be a window redraw instead of program wide
+				if(sys == WIN){
+					fullRedraw = true;
+				}
+
 				break;
 			case w_FOCUSLOST:
 				keyboardFocus = false;
