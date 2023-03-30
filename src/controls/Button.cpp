@@ -298,30 +298,27 @@ bool Button::handleEvent(Event *event){
 	}else if(event->getType() == e_CLICK && getActive()){
 
 		if(boundsCheck(event->getX(), event->getY())){
-			if(event->getButton() == b_LEFT){
-				if(leftClick()){
-					setActive(false);
-					mouseDown = false;
-					update();
-					event->setControl(this);
-					return true;
-				}
-			}else if(event->getButton() == b_RIGHT){
-				if(rightClick()){
-					setActive(false);
-					mouseDown = false;
-					update();
-					event->setControl(this);
-					return true;
-				}
-			}else if(event->getButton() == b_MIDDLE){
-				if(middleClick()){
-					setActive(false);
-					mouseDown = false;
-					update();
-					event->setControl(this);
-					return true;
-				}
+			if(event->getButton() == b_LEFT && leftClickAvailable()){
+				leftClick();
+				setActive(false);
+				mouseDown = false;
+				update();
+				event->setControl(this);
+				return true;
+			}else if(event->getButton() == b_RIGHT && rightClickAvailable()){
+				rightClick();
+				setActive(false);
+				mouseDown = false;
+				update();
+				event->setControl(this);
+				return true;
+			}else if(event->getButton() == b_MIDDLE && middleClickAvailable()){
+				middleClick();
+				setActive(false);
+				mouseDown = false;
+				update();
+				event->setControl(this);
+				return true;
 			}
 		}
 
