@@ -315,7 +315,7 @@ bool Window::handleEvent(Event *event){
 				keyboardFocus = false;
 				break;
 			case w_CLOSE:
-				//TODO: figure out what to do on close
+				unmountWindow(this);
 				break;
 		}
 	}

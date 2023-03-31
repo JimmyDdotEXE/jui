@@ -276,7 +276,7 @@ bool handleEvents(){
 					eventNeeded = false;
 				}
 
-				if(windowID != e.window.windowID){
+				if(windowID != e.window.windowID || eventMap.find(windowID) == eventMap.end()){
 					continue;
 				}
 
@@ -321,12 +321,13 @@ bool handleEvents(){
 						eventMap[windowID] = new Event(w_FOCUSLOST, e.window.timestamp, windowID, eventMap[windowID]);
 						break;
 					case SDL_WINDOWEVENT_CLOSE:
-						unmountWindow(windowMap[windowID]);
+						eventMap[windowID] = new Event(w_CLOSE, e.window.timestamp, windowID, eventMap[windowID]);
 						break;
 					default:
 						continue;
 						break;
 				}
+
 				break;
 			case SDL_MOUSEBUTTONDOWN:
 				eventMap[windowID] = handleMouseButtonDown(eventMap[windowID], e);
