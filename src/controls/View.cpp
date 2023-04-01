@@ -984,7 +984,7 @@ bool View::updateTexture(SDL_Renderer *renderer){
 			src.y = verticalBar->getPos();
 
 			if(src.y + height > viewHeight){
-				src.x = viewHeight - height;
+				src.y = viewHeight - height;
 			}
 
 		}else if(horizontalBar){
