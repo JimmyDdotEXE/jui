@@ -87,7 +87,9 @@ int Image::getScale(){
 
 /*get the color value of the pixel at the given coordinates*/
 Color Image::getPixel(uint x, uint y){
-	if(image){
+	if(x >= getWidth() || y >= getHeight()){
+		return Color(0);
+	}else if(image){
 		uint p;
 		int bpp = image->format->BytesPerPixel;
 		Uint8 *pixel = (Uint8 *)image->pixels + y * image->pitch + x * bpp;
