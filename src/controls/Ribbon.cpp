@@ -75,6 +75,8 @@ bool Ribbon::setHeight(uint h){
 
 bool Ribbon::handleEvent(Event *event){
 	if(event->getControl() != NULL){
+		hoverMode = false;
+		update();
 		setActive(false);
 		return true;
 	}
