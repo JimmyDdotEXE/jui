@@ -204,6 +204,7 @@ bool Image::setPixel(uint x, uint y, Color color){
 */
 bool Image::setScale(uint s){
 	scale = s;
+	redraw = true;
 	return scale == s;
 }
 
