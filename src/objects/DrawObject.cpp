@@ -191,10 +191,22 @@ bool DrawObject::redrawObject(){
 
 bool DrawObject::copySection(Rectangle *src, Rectangle *dest, SDL_Renderer *renderer){
 	if(texture != NULL){
-		SDL_Rect srcRect = {(int)src->getX(), (int)src->getY(), src->getWidth(), src->getHeight()};
-		SDL_Rect destRect = {(int)dest->getX(), (int)dest->getY(), dest->getWidth(), dest->getHeight()};
+		if(src == NULL && dest == NULL){
+			SDL_RenderCopy(renderer, texture, NULL, NULL);
+		}else if(src == NULL){
+			SDL_Rect destRect = {(int)dest->getX(), (int)dest->getY(), dest->getWidth(), dest->getHeight()};
 
-		SDL_RenderCopy(renderer, texture, &srcRect, &destRect);
+			SDL_RenderCopy(renderer, texture, NULL, &destRect);
+		}else if(dest == NULL){
+			SDL_Rect srcRect = {(int)src->getX(), (int)src->getY(), src->getWidth(), src->getHeight()};
+
+			SDL_RenderCopy(renderer, texture, &srcRect, NULL);
+		}else{
+			SDL_Rect srcRect = {(int)src->getX(), (int)src->getY(), src->getWidth(), src->getHeight()};
+			SDL_Rect destRect = {(int)dest->getX(), (int)dest->getY(), dest->getWidth(), dest->getHeight()};
+
+			SDL_RenderCopy(renderer, texture, &srcRect, &destRect);
+		}
 
 		return true;
 	}
