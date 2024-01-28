@@ -935,6 +935,12 @@ void View::update(){
 
 /*update the texture of the View to be printed later*/
 bool View::updateTexture(SDL_Renderer *renderer){
+	//this if-statement is a slightly janky way to address a bug that causes the View texture
+	//to go stale when the containing Window's renderer is refreshed
+	if(view != NULL && (fullRedraw || lastRender < lastFullRedraw)){
+		SDL_DestroyTexture(view);
+		view = NULL;
+	}
 
 	if(view == NULL){
 		view = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, viewWidth, viewHeight);
