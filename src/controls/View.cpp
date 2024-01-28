@@ -689,7 +689,7 @@ bool View::removeControl(Control *control){
 
 /*try to handle the given event*/
 bool View::handleEvent(Event *event){
-	if(event->getControl() != NULL){
+	if(event->getControl() != NULL || !boundsCheck(event->getX(), event->getY())){
 		setActive(false);
 		return true;
 	}
