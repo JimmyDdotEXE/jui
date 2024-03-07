@@ -252,9 +252,9 @@ bool DrawObject::draw(SDL_Renderer *renderer){
 
 			//if the texture is completely out of view on any side of the restriction
 			if(getX() > restrict->x + restrict->w ||
-					getX() + getWidth() < restrict->x ||
+					getX() + getTotalWidth() < restrict->x ||
 					getY() > restrict->y + restrict->h ||
-					getY() + getHeight() < restrict->y){
+					getY() + getTotalHeight() < restrict->y){
 				return false;
 			}
 
@@ -280,18 +280,18 @@ bool DrawObject::draw(SDL_Renderer *renderer){
 
 
 			//if the right edge of the texture is outside of the restiction
-			if(getX() + getWidth() > restrict->x + restrict->w){
+			if(getX() + getTotalWidth() > restrict->x + restrict->w){
 				dest.w = restrict->x + restrict->w - dest.x;
 			}else{
-				dest.w = getX() + getWidth() - dest.x;
+				dest.w = getX() + getTotalWidth() - dest.x;
 			}
 
 
 			//if the bottom edge of the texture is outside of the restiction
-			if(getY() + getHeight() > restrict->y + restrict->h){
+			if(getY() + getTotalHeight() > restrict->y + restrict->h){
 				dest.h = restrict->y + restrict->h - dest.y;
 			}else{
-				dest.h = getY() + getHeight() - dest.y;
+				dest.h = getY() + getTotalHeight() - dest.y;
 			}
 
 
